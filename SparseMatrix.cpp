@@ -22,15 +22,15 @@ public:
     int terms;              //非零项数
     int capacity;           //最大容量
 public:
-    SparseMatrix(){};                                   //默认构造函数
-    SparseMatrix(MatrixTerm* m,int terms,int r,int c);  //缺省构造函数
-    void Print();                                       //打印矩阵
-    SparseMatrix Transpose();                           //矩阵转置
-    SparseMatrix FastTranspose();                       //快速转置
-    SparseMatrix Add(SparseMatrix b);                   //矩阵加法
-    SparseMatrix Mult(SparseMatrix b);                  //矩阵乘法
-    void TailInsertTerm(int row, int col, int value);   //尾插元素
-    void InsertTerm(int row,int col,int value);         //插入元素
+    SparseMatrix()terms(0),rows(0),cols(0),capacity(0){};    //默认构造函数
+    SparseMatrix(MatrixTerm* m,int terms,int r,int c);       //缺省构造函数
+    void Print();                                            //打印矩阵
+    SparseMatrix Transpose();                                //矩阵转置
+    SparseMatrix FastTranspose();                            //快速转置
+    SparseMatrix Add(SparseMatrix b);                        //矩阵加法
+    SparseMatrix Mult(SparseMatrix b);                       //矩阵乘法
+    void TailInsertTerm(int row, int col, int value);        //尾插元素
+    void InsertTerm(int row,int col,int value);              //插入元素
 };
 
 SparseMatrix::SparseMatrix(MatrixTerm* m,int terms,int r,int c):terms(terms),rows(r),cols(c),capacity(terms)
