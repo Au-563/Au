@@ -22,7 +22,7 @@ public:
     int terms;              //非零项数
     int capacity;           //最大容量
 public:
-    SparseMatrix():terms(0),rows(0),cols(0),capacity(0){};    //默认构造函数
+    SparseMatrix():terms(0),rows(0),cols(0),capacity(0){};   //默认构造函数
     SparseMatrix(MatrixTerm* m,int terms,int r,int c);       //缺省构造函数
     void Print();                                            //打印矩阵
     SparseMatrix Transpose();                                //矩阵转置
