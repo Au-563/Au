@@ -29,7 +29,6 @@ public:
     SparseMatrix FastTranspose();                            //快速转置
     SparseMatrix Add(SparseMatrix b);                        //矩阵加法
     SparseMatrix Mult(SparseMatrix b);                       //矩阵乘法
-    void TailInsertTerm(int row, int col, int value);        //尾插元素
     void InsertTerm(int row,int col,int value);              //插入元素
 };
 
@@ -144,32 +143,6 @@ SparseMatrix SparseMatrix::Mult(SparseMatrix matrix)
         }
     }
     return tempSparseMatrix;
-}
-
-void SparseMatrix::TailInsertTerm(int row,int col,int value)
-{
-    if (this->terms == this->capacity)
-    {
-        if(terms==0){
-            this->termArray=new MatrixTerm;
-            this->capacity=1;
-        }
-        else{
-            this->capacity *= 2;
-            MatrixTerm* tempTerm = new MatrixTerm[this->capacity];
-            for (int i = 0; i < this->terms; i++) {
-            tempTerm[i] = this->termArray[i];
-            }
-            if(termArray){
-                delete[]termArray;
-            }
-            this->termArray = tempTerm;
-        }
-    }
-    this->termArray[terms].row=row;
-    this->termArray[terms].col=col;
-    this->termArray[terms].value=value;
-    this->terms++;
 }
 
 void SparseMatrix::InsertTerm(int row, int col, int value)
