@@ -24,8 +24,7 @@ public:
     void Print();                               //打印多项式
     Polynomial Add(Polynomial ploy);            //多项式相加
     Polynomial Mult(Polynomial poly);           //多项式相乘
-    void TailInsertTerm(float coef,int exp);    //尾插节点(用于Add)
-    void InsertTerm(float coef,int exp);        //插入节点(用于Mult)
+    void InsertTerm(float coef,int exp);        //插入节点
 };
 
 Polynomial::Polynomial(Term* t,int terms):terms(terms),capacity(terms)
@@ -69,26 +68,26 @@ void Polynomial::Print()
 Polynomial Polynomial::Add(Polynomial poly)
 {
     Polynomial tempPoly;
-    int aPos=0,bPos=0;                          //记录this->terms与poly的下标
+    int aPos=0,bPos=0;                                                      //记录this->terms与poly的下标
     while(aPos<this->terms&&bPos<poly.terms)
     {
         if(this->termArray[aPos].exp==poly.termArray[bPos].exp){
             if(this->termArray[aPos].coef+poly.termArray[bPos].coef!=0)     //指数相同且系数和非0   
-                tempPoly.TailInsertTerm(this->termArray[aPos].coef+poly.termArray[bPos].coef,this->termArray[aPos].exp);
+                tempPoly.InsertTerm(this->termArray[aPos].coef+poly.termArray[bPos].coef,this->termArray[aPos].exp);
             aPos++,bPos++;
         }
         else if(this->termArray[aPos].exp<poly.termArray[bPos].exp)         //存入指数更小的系数
-            tempPoly.TailInsertTerm(this->termArray[aPos].coef,this->termArray[aPos].exp),aPos++;
+            tempPoly.InsertTerm(this->termArray[aPos].coef,this->termArray[aPos].exp),aPos++;
         else
-            tempPoly.TailInsertTerm(poly.termArray[bPos].coef,poly.termArray[bPos].exp),bPos++;
+            tempPoly.InsertTerm(poly.termArray[bPos].coef,poly.termArray[bPos].exp),bPos++;
     }
     while(aPos<this->terms&&tempPoly.terms<=tempPoly.capacity)              //拷贝数组剩余元素
     {
-        tempPoly.TailInsertTerm(this->termArray[aPos].coef,this->termArray[aPos].exp),aPos++;
+        tempPoly.InsertTerm(this->termArray[aPos].coef,this->termArray[aPos].exp),aPos++;
     }
     while(bPos<poly.terms&&tempPoly.terms<=tempPoly.capacity)               //拷贝数组剩余元素
     {
-        tempPoly.TailInsertTerm(poly.termArray[bPos].coef,poly.termArray[bPos].exp),bPos++;
+        tempPoly.InsertTerm(poly.termArray[bPos].coef,poly.termArray[bPos].exp),bPos++;
     }
     return tempPoly;
 }
@@ -105,27 +104,6 @@ Polynomial Polynomial::Mult(Polynomial poly)
         }
     }
     return tempPoly;
-}
-
-void Polynomial::TailInsertTerm(float coef,int exp) //尾插节点
-{
-    if(this->terms==this->capacity){   //及时扩容
-        if(terms==0){
-            this->termArray=new Term;
-            capacity=1;
-        }
-        else{
-            this->capacity*=2;
-            Term* tempTerm=new Term[this->capacity];
-            for(int i=0;i<this->terms;i++){
-                tempTerm[i]=this->termArray[i];
-            }
-            delete[]this->termArray;                                    
-            this->termArray=tempTerm;   
-        }
-    }    
-    this->termArray[terms].exp=exp;
-    this->termArray[terms++].coef=coef;
 }
 
 void Polynomial::InsertTerm(float coef,int exp)     //插入节点
