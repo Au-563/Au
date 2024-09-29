@@ -6,7 +6,8 @@ private:
     int capacity;      
 public:
     Stack():capacity(0),top(-1){};
-    Stack(int capacity);               
+    Stack(int capacity);   
+    T& operator[](int idx);            
     bool IsEmpty() const;
     int Size() const;
     T& Top() const;           
@@ -22,6 +23,15 @@ Stack<T>::Stack(int capacity) : capacity(capacity)
     }
     stack = new T[capacity];  
     top = -1;                 
+}
+
+template<class T>
+T& Stack<T>::operator[](int idx)
+{
+    if(idx>this->Size()){
+        throw"Error operation";
+    }
+    return this->stack[idx];
 }
 
 template<class T>
