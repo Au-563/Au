@@ -5,8 +5,10 @@ private:
     int top;           
     int capacity;      
 public:
+    Stack():capacity(0),top(-1){};
     Stack(int capacity);               
-    bool IsEmpty() const;      
+    bool IsEmpty() const;
+    int Size() const;
     T& Top() const;           
     void Push(const T& item);   
     void Pop();                
@@ -29,6 +31,12 @@ bool Stack<T>::IsEmpty() const
 }
 
 template<class T>
+int Stack<T>::Size() const
+{
+    return top+1;;
+}
+
+template<class T>
 T& Stack<T>::Top() const
 {
     if(IsEmpty()){
@@ -40,6 +48,10 @@ T& Stack<T>::Top() const
 template<class T>
 void Stack<T>::Push(const T& x)
 {
+    if(capacity==0){
+        this->stack=new T;
+        capacity++;
+    }
     if(top==capacity-1){
         capacity*=2;
         T* temp=new T[capacity];
