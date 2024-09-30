@@ -35,13 +35,13 @@ Offsets* moves = new Offsets[8];
 // 初始化方向偏移
 void setmoves()
 {
-    moves[0].a=0, moves[0].b=-1;   // 北
-    moves[1].a=1, moves[1].b=-1;   // 东北
-    moves[2].a=1, moves[2].b=0;    // 东
+    moves[0].a=-1, moves[0].b=0;   // 北
+    moves[1].a=-1, moves[1].b=1;   // 东北
+    moves[2].a=0, moves[2].b=1;    // 东
     moves[3].a=1, moves[3].b=1;    // 东南
-    moves[4].a=0, moves[4].b=1;    // 南
-    moves[5].a=-1, moves[5].b=1;   // 西南
-    moves[6].a=-1, moves[6].b=0;   // 西
+    moves[4].a=1, moves[4].b=0;    // 南
+    moves[5].a=1, moves[5].b=-1;   // 西南
+    moves[6].a=0, moves[6].b=-1;   // 西
     moves[7].a=-1, moves[7].b=-1;  // 西北
 }
 
@@ -49,11 +49,11 @@ void setmoves()
 class Item
 {
 public:
-    int x;                          // x坐标
-    int y;                          // y坐标
-    int dir = 0;                    // 当前方向（初始化为北）
-    Item():x(0),y(0){}              // 默认构造函数
-    Item(int x, int y):x(x),y(y){}  // 带参数构造函数
+    int x;                                          // x坐标
+    int y;                                          // y坐标
+    int dir = 0;                                    // 当前方向（初始化为北）
+    Item():x(0),y(0){}                              // 默认构造函数
+    Item(int x, int y,int dir):x(x),y(y),dir(dir){} // 带参数构造函数
 };
 
 // 重载<<运算符，用于输出Item对象
@@ -77,9 +77,8 @@ void path(const int m, const int p, int start_x, int start_y, int start_dir, int
     // 标记起点为已走过
     mark[start_x][start_y] = 1;
     Stack<Item> stack((m - 2) * (p - 2));   // 创建一个足够大的栈用于存储走过路径
-    Item temp(start_x + moves[start_dir].a, start_y + moves[start_dir].b);  // 计算起始位置
+    Item temp(start_x,start_y,start_dir);  // 计算起始位置
     stack.Push(temp);   // 压入起始位置
-
     while(!stack.IsEmpty()) {   // 当栈不为空时
         temp = stack.Top();     // 获取栈顶元素
         stack.Pop();            // 弹出栈顶元素
@@ -90,8 +89,8 @@ void path(const int m, const int p, int start_x, int start_y, int start_dir, int
             int g = x + moves[d].a, h = y + moves[d].b;
 
             if(g == end_x && h == end_y) {  // 如果到达出口
-                stack.Push(Item(x, y));     // 将当前坐标入栈
-                stack.Push(Item(g, h));     // 将出口坐标入栈
+                stack.Push(Item(x,y,0));     // 将当前坐标入栈
+                stack.Push(Item(g,h,0));     // 将出口坐标入栈
                 for(int i = 0; i < stack.Size(); i++) {
                     cout << stack[i];       // 输出栈中的所有坐标
                 }
