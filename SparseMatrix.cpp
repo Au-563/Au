@@ -58,7 +58,7 @@ SparseMatrix SparseMatrix::Transpose()
 {
     if(!this->terms)throw"The matrix is empty";
     else{
-        SparseMatrix temp=SparseMatrix(termArray,terms,rows,cols);
+        SparseMatrix temp=SparseMatrix(termArray,terms,cols,rows);
         int counter=0;
         for(int i=0;i<this->cols;i++){
             for(int j=0;j<this->terms;j++){
@@ -77,7 +77,7 @@ SparseMatrix SparseMatrix::FastTranspose()
 {
     if(!this->terms)throw"The matrix is empty";
     else{
-        SparseMatrix temp=SparseMatrix(termArray,terms,rows,cols);
+        SparseMatrix temp=SparseMatrix(termArray,terms,cols,rows);
         int* rowStart=new int[this->cols]{};
         int* rowSize=new int[this->cols]{};
         for(int i=0;i<this->terms;i++)rowSize[this->termArray[i].col]++;
