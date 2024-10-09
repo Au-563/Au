@@ -1,18 +1,18 @@
 template<class T>
 class Stack {
 private:
-    T* stack;          
-    int top;           
-    int capacity;      
+    T* stack;          // 动态数组，存储栈的元素
+    int top;           // 栈顶索引
+    int capacity;      // 栈的容量
 public:
-    Stack():capacity(0),top(-1){};
-    Stack(int capacity);   
-    T& operator[](int idx);            
-    bool IsEmpty() const;
-    int Size() const;
-    T& Top() const;           
-    void Push(const T& item);   
-    void Pop();                
+    Stack():capacity(0),top(-1){};      // 默认构造函数
+    Stack(int capacity);                // 带参数的构造函数
+    T& operator[](int idx);             // 重载[]运算符，用于访问栈中的元素
+    bool IsEmpty() const;               // 检查栈是否为空
+    int Size() const;                   // 获取栈的当前大小
+    T& Top() const;                     // 获取栈顶元素
+    void Push(const T& item);           // 压入栈元素
+    void Pop();                         // 弹出栈顶元素
 };
 
 template<class T>
