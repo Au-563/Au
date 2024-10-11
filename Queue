@@ -1,0 +1,82 @@
+template<class T>
+class Queue
+{
+private:
+    T* queue;
+    int front;
+    int rear;
+    int capacity;
+public:
+    Queue(int capacity);
+    bool IsEmpty() const;
+    T& Front() const;
+    T& Rear() const;
+    void Push(const T& x);
+    void Pop();
+};
+
+template<class T>
+Queue<T>::Queue(int capacity):capacity(capacity)
+{
+    if(capacity<1){
+        throw "Queue capacity must be > 0";
+    }
+    this->queue=new T[capacity];
+    this->Front=this->rear=0;
+}
+
+template<class T>
+bool Queue<T>::IsEmpty() const
+{
+    return front==rear;
+}
+
+template<class T>
+T& Queue<T>::Front() const
+{
+    if(IsEmpty()){
+        throw"Queue is empty";
+    }
+    return queue[(front+1)%capacity];
+}
+
+template<class T>
+T& Queue<T>::Rear() const
+{   
+    if(IsEmpty()){
+        throw"Queue is empty";
+    }
+    return queue[rear];
+}
+
+template<class T>
+void Queue<T>::Push(const T& x)
+{
+    if((rear+1)%capacity==front){
+        T* temp=new T[capacity*2];
+        int start=(front+1)%capacity;
+        if(start<2){
+            copy(queue+start,queue+start+capacity-1,temp);
+        }
+        else{
+            copy(queue+start,queue+capacity,temp);
+            copy(queue,queue+rear+1,temp+capacity-start);
+        }   
+        front=2*capacity-1;
+        rear=capacity-2;
+        delete[]this->queue;
+        this->queue=temp;
+        capacity*=2;
+    }
+    rear=(rear+1)%capacity;
+    this->queue[rear]=x;
+}
+
+template<class T>
+void Queue<T>::Pop()
+{
+    if(IsEmpty()){
+        throw"Queue is empty";
+    }
+    Front++;
+}
