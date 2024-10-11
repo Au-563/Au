@@ -7,7 +7,6 @@ private:
 public:
     Stack():capacity(0),top(-1){};      // 默认构造函数
     Stack(int capacity);                // 带参数的构造函数
-    T& operator[](int idx);             // 重载[]运算符，用于访问栈中的元素
     bool IsEmpty() const;               // 检查栈是否为空
     int Size() const;                   // 获取栈的当前大小
     T& Top() const;                     // 获取栈顶元素
@@ -23,15 +22,6 @@ Stack<T>::Stack(int capacity) : capacity(capacity)
     }
     stack = new T[capacity];  
     top = -1;                 
-}
-
-template<class T>
-T& Stack<T>::operator[](int idx)
-{
-    if(idx>this->Size()){
-        throw"Error operation";
-    }
-    return this->stack[idx];
 }
 
 template<class T>
