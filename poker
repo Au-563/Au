@@ -1,0 +1,441 @@
+#include<iostream>
+#include<stack>
+#include<queue>
+#include<list>
+#include<string>
+#include<ctime>
+using namespace std;
+
+//红桃(Heart)、方块(Diamond)、黑桃(Spade)、梅花(Club)
+enum Design { Heart = 1, Diamond = 2, Sapade = 3, Club = 4 };
+
+//'J'、'P'、'Q'
+enum JQK { J = 11, Q = 12, K = 13 };
+
+//构建一个扑克牌结构体
+struct Poker {
+    int design; //花色
+    int data;   //符号
+};
+
+//获取花色
+string Design(int idx) {
+    switch (idx) {
+    case 1:
+        return "红桃";
+        break;
+    case 2:
+        return "方块";
+        break;
+    case 3:
+        return "黑桃";
+        break;
+    case 4:
+        return "梅花";
+        break;
+    default:
+        return NULL;
+        break;
+    }
+}
+
+//获取符号
+string Data(int idx) {
+    if (idx == 1) {
+        return "A";
+    }
+    if (idx == 11) {
+        return "J";
+    }
+    if (idx == 12) {
+        return "Q";
+    }
+    if (idx == 13) {
+        return "K";
+    }
+    return to_string(idx);
+}
+
+//判断花色是否不同
+bool JudgeColor(int design1, int design2) {
+    if ((design1 <= 2 && design2 <= 2) || (design1 >= 3 && design2 >= 3)) {
+        return 0;
+    }
+
+    return 1;
+}
+
+//判断是否所有牌都已输出
+bool JudgeOutputs(stack<Poker> outputs[4]) {
+    if (outputs[0].size() == 13 && outputs[1].size() == 13 && outputs[2].size() == 13 && outputs[3].size() == 13) {
+        return 1;
+    }
+    return 0;
+}
+
+//显示扑克牌实时状态
+void Print(list<Poker> unveiled_files[7], stack<Poker> outputs[4], queue<Poker> Idle) {
+    //出牌堆、输出堆顶、闲置堆顶
+    for (int i = 0; i < 7; i++) {
+        cout << "出牌堆" << i + 1 << " ：";
+        if (!unveiled_files[i].empty()) {
+            for (list<Poker>::iterator it = unveiled_files[i].begin(); it != unveiled_files[i].end(); it++) {
+                cout << Design(it->design) << " " << Data(it->data) << "    ";
+            }
+        }
+        else {
+            cout << "空";
+        }
+        cout << endl;
+    }
+    cout << '\n';
+    for (int i = 0; i < 4; i++) {
+        cout << "输出堆" << i + 1 << " ：";
+        if (!outputs[i].empty()) {
+            cout << Design(outputs[i].top().design) << " " << Data(outputs[i].top().data);
+        }
+        else {
+            cout << "空";
+        }
+        cout << endl;
+    }
+    cout << '\n';
+    cout << "闲置堆：";
+    if (!Idle.empty())
+    {
+        cout << Design(Idle.front().design) << " " << Data(Idle.front().data);
+    }
+    else {
+        cout << "空";
+    }
+    cout << endl;
+    cout << "\n\n";
+}
+
+//洗牌操作
+stack<Poker> Disturb(Poker* cards) {
+    stack<Poker> temp_stack;
+    srand((unsigned int)time(NULL));
+    for (int i = 0; i < 52; i++) {
+        int temp_int = rand() % 51 + 1;
+        swap(cards[i], cards[temp_int]);
+    }
+    for (int i = 0; i < 52; i++) {
+        temp_stack.push(cards[i]);
+    }
+    return temp_stack;
+}
+
+//游戏函数，返回输出堆总牌数
+int Play(stack<Poker> poker)
+{
+    //设置出牌堆28张，files[0~6]对应出牌堆1~7
+    stack<Poker> files[7];
+    for (int i = 0; i < 7; i++) {
+        for (int j = 0; j <= i; j++) {
+            files[i].push(poker.top());
+            poker.pop();
+        }
+    }
+
+    //设置闲置堆24张
+    queue<Poker> Idle;
+    while (!poker.empty()) {
+        Idle.push(poker.top());
+        poker.pop();
+    }
+
+    //设置输出堆，对应红桃、方块、黑桃、梅花
+    stack<Poker> outputs[4];
+
+    //设置翻开堆，存放出牌堆中已翻开的牌
+    list<Poker> unveiled_files[7];
+
+    //翻开出牌堆顶首张牌
+    for (int i = 0; i < 7; i++) {
+        unveiled_files[i].push_back(files[i].top());
+        files[i].pop();
+    }
+
+    //统计操作步数
+    int count_steps = 0;
+    //记录上次出牌堆间移动对应操作步数，辅助判断是否显然死循环
+    int bf_step = -1;
+    //记录先前两次出牌堆间移动的位置(bf_idx[0]：上上次，bf_idx[1]上次)
+    Poker* bf_idx = new Poker[2]{ {-1,-1} ,{-1,-1} };
+
+    //开局显示
+    cout << "<初始状态>" << endl;
+    Print(unveiled_files, outputs, Idle);
+
+    //开始操作
+    while (1) {
+    RESTART:
+        //在输出堆和闲置堆顶查找符合输出规则的牌放入相应输出堆中
+            //判断出牌堆顶是否为'A'
+        for (int i = 0; i < 7; i++) {
+            if (!unveiled_files[i].empty() && unveiled_files[i].back().data == 1) {
+                //记录操作
+                cout << "<第 " << ++count_steps << " 次移牌操作>" << endl;
+                cout << "将出牌堆" << i + 1 << " " << Design(unveiled_files[i].back().design) << " " << Data(unveiled_files[i].back().data) << " 移至输出堆" << unveiled_files[i].back().design << endl;
+                //执行输出
+                outputs[unveiled_files[i].back().design - 1].push(unveiled_files[i].back());
+                unveiled_files[i].pop_back();
+                //若翻开堆为空且出牌堆非空，翻开出牌堆顶的牌
+                if (unveiled_files[i].empty() && !files[i].empty()) {
+                    unveiled_files[i].push_back(files[i].top());
+                    files[i].pop();
+                }
+                Print(unveiled_files, outputs, Idle);
+                goto RESTART;
+            }
+        }
+
+        //判断闲置堆顶是否为'A'
+        if (!Idle.empty() && Idle.front().data == 1) {
+            //记录操作
+            cout << "<第 " << ++count_steps << " 次移牌操作>" << endl;
+            cout << "将闲置堆" << Design(Idle.front().design) << " " << Data(Idle.front().data) << " 移至输出堆" << Idle.front().design << endl;
+            //执行输出
+            outputs[Idle.front().design - 1].push(Idle.front());
+            Idle.pop();
+            Print(unveiled_files, outputs, Idle);
+            goto RESTART;
+        }
+
+        //查看出牌堆顶和闲置堆顶是否为可以输出的非'A'牌
+        for (int i = 0; i < 4; i++) {
+            //查看出牌堆
+            for (int j = 0; j < 7; j++) {
+                //判断是否符合输出要求(花色(design)相同&&数字(data)多出1)
+                if ((!outputs[i].empty() && !unveiled_files[j].empty()) && (unveiled_files[j].back().design == i + 1 && unveiled_files[j].back().data == outputs[i].top().data + 1)) {
+                    //记录操作
+                    cout << "<第 " << ++count_steps << " 次移牌操作>" << endl;
+                    cout << "将出牌堆" << j + 1 << " " << Design(unveiled_files[j].back().design) << " " << Data(unveiled_files[j].back().data) << " 移至输出堆" << unveiled_files[j].back().design << endl;
+                    //执行输出
+                    outputs[i].push(unveiled_files[j].back());
+                    unveiled_files[j].pop_back();
+                    //若翻开堆为空且出牌堆非空，翻开出牌堆顶的牌
+                    if (unveiled_files[j].empty() && !files[j].empty()) {
+                        unveiled_files[j].push_back(files[j].top());
+                        files[j].pop();
+                    }
+                    Print(unveiled_files, outputs, Idle);
+                    goto RESTART;
+                }
+            }
+            //查看闲置堆
+            //判断是否符合输出要求(花色(design)相同&&数字(data)多出1)
+            if ((!outputs[i].empty() && !Idle.empty()) && (Idle.front().design == i + 1 && Idle.front().data == outputs[i].top().data + 1)) {
+                //记录操作
+                cout << "<第 " << ++count_steps << " 次移牌操作>" << endl;
+                cout << "将闲置堆" << Design(Idle.front().design) << " " << Data(Idle.front().data) << " 移至输出堆" << Idle.front().design << endl;
+                //执行输出
+                outputs[i].push(Idle.front());
+                Idle.pop();
+                Print(unveiled_files, outputs, Idle);
+                goto RESTART;
+            }
+        }
+
+        //若出现空的出牌堆，查找'K'并移至空堆
+        for (int i = 0; i < 7; i++) {
+            //判断出牌堆是否为空
+            if (unveiled_files[i].empty() && files[i].empty()) {
+                //查询出牌堆有无'K'
+                for (int j = 0; j < 7; j++) {
+                    if (i == j) {
+                        continue;
+                    }
+                    //判断被查询的出牌堆是否为空
+                    if (!unveiled_files[j].empty()) {
+                        for (list<Poker>::iterator it = unveiled_files[j].begin(); it != unveiled_files[j].end(); it++) {
+                            //确保为非置顶'K'(K非翻开堆首位或出牌堆非空)
+                            if (it->data == K && (unveiled_files[j].begin()->data != K || !files[j].empty())) {
+                                //记录操作
+                                cout << "<第 " << ++count_steps << " 次移牌操作>" << endl;
+                                if (it->data == unveiled_files[j].back().data&& it->design == unveiled_files[j].back().design) {
+                                    cout << "将出牌堆" << j + 1 << " " << Design(unveiled_files[j].back().design) << " " << Data(it->data) << " 移至出牌堆" << i + 1 << endl;
+                                }
+                                else {
+                                    cout << "将出牌堆" << j + 1 << " " << Data(it->data) << " ~ " << Data(unveiled_files[j].back().data) << " 移至出牌堆" << i + 1 << endl;
+                                }
+                                //执行移动
+                                list<Poker>::iterator temp = it;
+                                while (it != unveiled_files[j].end()) {
+                                    unveiled_files[i].push_back(*it);
+                                    it++;
+                                }
+                                unveiled_files[j].erase(temp, unveiled_files[j].end());
+                                //若翻开堆为空且出牌堆非空，翻开出牌堆顶的牌
+                                if (unveiled_files[j].empty() && !files[j].empty()) {
+                                    unveiled_files[j].push_back(files[j].top());
+                                    files[j].pop();
+                                }
+                                Print(unveiled_files, outputs, Idle);
+                                goto RESTART;
+                            }
+                        }
+                    }
+                }
+                //查询闲置堆有无'K'
+                if (!Idle.empty()) {
+                    for (int j = 0; j < Idle.size()-1; j++) {
+                        if (Idle.front().data == K) {
+                            //记录操作
+                            cout << "<第 " << ++count_steps << " 次移牌操作>" << endl;
+                            cout << "将闲置堆" << Design(Idle.front().design) << " " << Data(Idle.front().data) << " 移至出牌堆" << i + 1 << endl;
+                            //执行移动
+                            unveiled_files[i].push_back(Idle.front());
+                            Idle.pop();
+                            Print(unveiled_files, outputs, Idle);
+                            goto RESTART;
+                        }
+                        else {
+                            //记录操作
+                            cout << "<闲置堆翻牌>" << endl;                          
+                            //执行翻牌
+                            Idle.push(Idle.front());
+                            Idle.pop();
+                            cout << "堆顶：" << Design(Idle.front().design) << " " << Data(Idle.front().data) << '\n' << endl;
+                        }
+                    }
+                }
+            }
+        }
+        
+        //出牌堆间按规则移动
+        for (int i = 0; i < 7; i++) {
+            for (list<Poker>::iterator it = unveiled_files[i].begin(); it != unveiled_files[i].end(); it++) {
+                for (int j = 0; j < 7; j++) {
+                    if (i == j) {
+                        continue;
+                    }
+                    if ((it->data == unveiled_files[j].back().data - 1 )&&(JudgeColor(it->design, unveiled_files[j].back().design))) {
+                        //判断是否陷入死循环
+                        if ((bf_idx[0].data == unveiled_files[j].back().data) && (bf_idx[0].design == unveiled_files[j].back().design) && bf_step == count_steps - 1) {
+                            goto DEAD;
+                        }
+                        bf_step = count_steps;
+                        //记录移动位置
+                        bf_idx[0] = bf_idx[1];
+                        bf_idx[1] = unveiled_files[j].back();
+                        //记录操作
+                        cout << "<第 " << ++count_steps << " 次移牌操作>" << endl;
+                        if (it->data == unveiled_files[i].back().data&& it->design == unveiled_files[i].back().design) {
+                            cout << "将出牌堆" << i + 1 << " " << Design(it->design) << " " << Data(it->data) << " 移至出牌堆" << j + 1 << endl;
+                        }
+                        else {
+                            cout << "将出牌堆" << i + 1 << " " << Data(it->data) << " ~ " << Data(unveiled_files[i].back().data) << " 移至出牌堆" << j + 1 << endl;
+                        }
+                        //执行移动
+                        list<Poker>::iterator temp = it;
+                        while (it != unveiled_files[i].end()) {
+                            unveiled_files[j].push_back(*it);
+                            it++;
+                        }
+                        unveiled_files[i].erase(temp, unveiled_files[i].end());
+                        //若翻开堆为空且出牌堆非空，翻开出牌堆顶的牌
+                        if (unveiled_files[i].empty() && !files[i].empty()) {
+                            unveiled_files[i].push_back(files[i].top());
+                            files[i].pop();
+                        }
+                        Print(unveiled_files, outputs, Idle);
+                        goto RESTART;
+                    }
+                }
+            }
+        }
+
+    DEAD:
+        //从闲置堆中翻牌放置出牌堆顶
+        if (!Idle.empty()) {
+            for (int i = 0; i < Idle.size() - 1; i++) {
+                for (int j = 0; j < 7; j++) {
+                    if ((!unveiled_files[j].empty()) && (Idle.front().data == unveiled_files[j].back().data - 1 )&&( JudgeColor(Idle.front().design, unveiled_files[j].back().design))) {
+                        //记录操作
+                        cout << "<第 " << ++count_steps << " 次移牌操作>" << endl;
+                        cout << "将闲置堆 " << Design(Idle.front().design) << " " << Data(Idle.front().data) << " 移至出牌堆" << j + 1 << endl;
+                        //执行移动
+                        unveiled_files[j].push_back(Idle.front());
+                        Idle.pop();
+                        Print(unveiled_files, outputs, Idle);
+                        goto RESTART;
+                    }
+                }
+                cout << "<闲置堆第 " << i + 1 << " 次翻牌>" << endl;
+                Idle.push(Idle.front());
+                Idle.pop();
+                cout << "堆顶：" << Design(Idle.front().design) << " " << Data(Idle.front().data) << '\n' << endl;
+            }
+        }
+
+        //判断游戏是否结束
+           //所有牌都已输出
+        if (JudgeOutputs(outputs)) {
+            cout << "所有扑克牌已被输出，游戏结束。" << endl;
+            break;
+        }
+            //无法再移动扑克牌
+        else{
+            cout << "已无可继续移动的扑克牌，游戏结束。" << endl;
+            break;
+        }
+    }
+
+    //返回输出堆总牌数
+    int count = outputs[0].size() + outputs[1].size() + outputs[2].size() + outputs[3].size();
+    
+    for (int i = 0; i < 4; i++) {
+        cout << "输出堆" << i + 1 << " ：";
+        while (!outputs[i].empty()) {
+            cout << Design(outputs[i].top().design) << " " << Data(outputs[i].top().data) << "    ";
+            outputs[i]. pop();
+        }
+        cout << endl;
+    }
+    return count;
+}
+
+int main() {
+    //记录游戏场数
+    int count_round=0;
+    //记录净收入
+    int count_money=0;
+    while(1){
+        if(count_round){
+            char judge;
+            cout<<"是否继续游戏？ y/n：";
+            cin>>judge;
+            if(judge=='y'||judge=='Y'){
+                cout<<"成功支付52美元，第"<<count_round+1<<"局游戏开始！"<<endl;
+                count_money-=52;
+            }
+            else{
+                cout<<"成功退出游戏，总计净收入为"<<count_money<<"美元！"<<endl;
+                break;
+            }
+        }
+        else{
+            count_money-=52;
+            count_round++;
+        }
+        //设置一套扑克牌
+        Poker* cards = new Poker[52];
+        int count = 0;
+        for (int i = 1; i <= 13; i++) {
+            for (int j = 0; j < 4; j++) {
+                cards[count].data = i;
+                cards[count++].design = j + 1;
+            }
+        }
+        //打乱扑克牌
+        stack<Poker> poker = Disturb(cards);
+        //开始游戏
+        int count_outputs = Play(poker);
+        cout << "第" << count_outputs << "局共输出" << count_outputs << "张扑克牌" << "\n\n" << endl;
+        cout<<"本局净收入为"<<5*count_outputs-52<<"美元"<<endl;
+        count_money+=(5*count_outputs);
+    }
+    return 0;
+}
