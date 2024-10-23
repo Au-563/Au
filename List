@@ -1,0 +1,115 @@
+template<class T>
+class List;
+template<class T>
+class ListNode{
+    friend class List<T>;
+private:
+    T data;             //数据
+    ListNode<T>* next;  //前指针
+    ListNode<T>* prev;  //后指针
+public:
+    friend ostream& operator<<(ostream& os,ListNode Node){
+        os<<Node.data;
+        return os;
+    }
+};
+
+template<class T>
+class List{
+private:
+    ListNode<T>* head;     //头指针
+    ListNode<T>* tail;     //尾指针
+    int length;
+public:
+    List();
+    void push_back(T data);
+    void push_front(T data);
+    void pop_back();
+    void pop_front();
+    ListNode<T>* begin();
+    ListNode<T>* end();
+    ListNode<T> front();
+    ListNode<T> back();
+    int size();
+    bool empty();
+};
+
+template<class T>
+List<T>::List(){
+        head=new ListNode<T>;
+        tail=new ListNode<T>;
+        head->prev=tail->next=NULL;
+        head->next=tail;
+        tail->prev=head;
+        length=0;
+}
+
+template<class T>
+void List<T>::push_back(T data){
+        ListNode<T>* temp=new ListNode<T>;
+        temp->data=data;
+        temp->prev=tail->prev;
+        tail->prev->next=temp;
+        temp->next=tail;
+        tail->prev=temp;
+    length++;
+}
+
+template<class T>
+void List<T>::push_front(T data){
+        ListNode<T>* temp=new ListNode<T>;
+        temp->data=data;
+        temp->next=head->next;
+        head->next->prev=temp;
+        temp->prev=head;
+        head->next=temp;
+    length++;
+}
+
+template<class T>
+void List<T>::pop_back(){
+    ListNode<T>* temp=tail->prev;
+    tail->prev->prev->next=tail;
+    tail->prev=tail->prev->prev;
+    delete temp;
+    length--;
+}
+
+template<class T>
+void List<T>::pop_front(){
+    ListNode<T>* temp=head->next;
+    head->next->next->prev=head;
+    head->next=head->next->next;
+    delete temp;
+    length--;
+}
+
+template<class T>
+ListNode<T>* List<T>::begin(){
+    return head->next;
+}
+
+template<class T>
+ListNode<T>* List<T>::end(){
+    return tail;
+}
+
+template<class T>
+ListNode<T> List<T>::front(){
+    return *(head->next);
+}
+
+template<class T>
+ListNode<T> List<T>::back(){
+    return *(tail->prev);
+}
+
+template<class T>
+int List<T>::size(){
+    return length;
+}
+
+template<class T>
+bool List<T>::empty(){
+    return length==0?1:0;
+}
