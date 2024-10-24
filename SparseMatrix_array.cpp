@@ -1,5 +1,5 @@
 class SparseMatrix;
-class MatrixTerm
+class MatrixNode
 {
     friend SparseMatrix;
 private:
@@ -16,14 +16,14 @@ public:
 class SparseMatrix			//稀疏矩阵
 {
 public:
-    MatrixTerm* termArray;  //非零项数组
+    MatrixNode* array;      //非零项数组
     int rows;               //总行数
     int cols;               //总列数
     int terms;              //非零项数
     int capacity;           //最大容量
 public:
     SparseMatrix():terms(0),rows(0),cols(0),capacity(0){};   //默认构造函数
-    SparseMatrix(MatrixTerm* m,int terms,int r,int c);       //缺省构造函数
+    SparseMatrix(MatrixNode* m,int terms,int r,int c);       //缺省构造函数
     void Print();                                            //打印矩阵
     SparseMatrix Transpose();                                //矩阵转置
     SparseMatrix FastTranspose();                            //快速转置
@@ -32,12 +32,12 @@ public:
     void InsertTerm(int row,int col,int value);              //插入元素
 };
 
-SparseMatrix::SparseMatrix(MatrixTerm* m,int terms,int r,int c):terms(terms),rows(r),cols(c),capacity(terms)
+SparseMatrix::SparseMatrix(MatrixNode* m,int terms,int r,int c):terms(terms),rows(r),cols(c),capacity(terms)
 {
     if(terms){
-        this->termArray=new MatrixTerm[terms];
+        this->array=new MatrixNode[terms];
         for(int i=0;i<terms;i++){
-        this->termArray[i]=m[i];
+        this->array[i]=m[i];
     }
     }
 }
@@ -47,7 +47,7 @@ void SparseMatrix::Print()
     int count=0;
     for(int i=0;i<rows;i++){
         for(int j=0;j<cols;j++){
-            if(termArray[count].row==i&&termArray[count].col==j)cout<<termArray[count++].value<<" ";
+            if(array[count].row==i&&array[count].col==j)cout<<array[count++].value<<" ";
             else cout<<"0 ";
         }
         cout<<'\n';
@@ -58,14 +58,14 @@ SparseMatrix SparseMatrix::Transpose()
 {
     if(!this->terms)throw"The matrix is empty";
     else{
-        SparseMatrix temp=SparseMatrix(termArray,terms,cols,rows);
+        SparseMatrix temp=SparseMatrix(array,terms,cols,rows);
         int counter=0;
         for(int i=0;i<this->cols;i++){
             for(int j=0;j<this->terms;j++){
-                if(this->termArray[j].col==i){
-                    temp.termArray[counter].row=i;
-                    temp.termArray[counter].col=this->termArray[j].row;
-                    temp.termArray[counter++].value=this->termArray[j].value;
+                if(this->array[j].col==i){
+                    temp.array[counter].row=i;
+                    temp.array[counter].col=this->array[j].row;
+                    temp.array[counter++].value=this->array[j].value;
                 }
             }
         }
@@ -77,14 +77,14 @@ SparseMatrix SparseMatrix::FastTranspose()
 {
     if(!this->terms)throw"The matrix is empty";
     else{
-        SparseMatrix temp=SparseMatrix(termArray,terms,cols,rows);
+        SparseMatrix temp=SparseMatrix(array,terms,cols,rows);
         int* rowStart=new int[this->cols]{};
         int* rowSize=new int[this->cols]{};
-        for(int i=0;i<this->terms;i++)rowSize[this->termArray[i].col]++;
+        for(int i=0;i<this->terms;i++)rowSize[this->array[i].col]++;
         for(int i=1;i<this->cols;i++)rowStart[i]=rowStart[i-1]+rowSize[i-1];
         for(int i=0;i<this->terms;i++){
-            temp.termArray[rowStart[this->termArray[i].col]++]=this->termArray[i];
-            swap(temp.termArray[rowStart[this->termArray[i].col]-1].col,temp.termArray[rowStart[this->termArray[i].col]-1].row);
+            temp.array[rowStart[this->array[i].col]++]=this->array[i];
+            swap(temp.array[rowStart[this->array[i].col]-1].col,temp.array[rowStart[this->array[i].col]-1].row);
         }
         delete[]rowSize;
         delete[]rowStart;
@@ -101,29 +101,29 @@ SparseMatrix SparseMatrix::Add(SparseMatrix matrix)
     int apos=0,bpos=0;
     while(apos<this->terms&&bpos<matrix.terms)
     {
-        if(this->termArray[apos].row<matrix.termArray[bpos].row){
-            tempSparseMatrix.InsertTerm(this->termArray[apos].row,this->termArray[apos].col,this->termArray[apos].value);apos++;
+        if(this->array[apos].row<matrix.array[bpos].row){
+            tempSparseMatrix.InsertTerm(this->array[apos].row,this->array[apos].col,this->array[apos].value);apos++;
         }
-        else if(this->termArray[apos].row>matrix.termArray[bpos].row){
-            tempSparseMatrix.InsertTerm(matrix.termArray[bpos].row,matrix.termArray[bpos].col,matrix.termArray[bpos].value);bpos++;
+        else if(this->array[apos].row>matrix.array[bpos].row){
+            tempSparseMatrix.InsertTerm(matrix.array[bpos].row,matrix.array[bpos].col,matrix.array[bpos].value);bpos++;
         }
-        else if(this->termArray[apos].col<matrix.termArray[bpos].col){
-            tempSparseMatrix.InsertTerm(this->termArray[apos].row,this->termArray[apos].col,this->termArray[apos].value);apos++;
+        else if(this->array[apos].col<matrix.array[bpos].col){
+            tempSparseMatrix.InsertTerm(this->array[apos].row,this->array[apos].col,this->array[apos].value);apos++;
         }
-        else if(this->termArray[apos].col>matrix.termArray[bpos].col){
-            tempSparseMatrix.InsertTerm(matrix.termArray[bpos].row,matrix.termArray[bpos].col,matrix.termArray[bpos].value);bpos++;
+        else if(this->array[apos].col>matrix.array[bpos].col){
+            tempSparseMatrix.InsertTerm(matrix.array[bpos].row,matrix.array[bpos].col,matrix.array[bpos].value);bpos++;
         }
         else{
-            tempSparseMatrix.InsertTerm(matrix.termArray[bpos].row,matrix.termArray[bpos].col,this->termArray[apos].value+matrix.termArray[bpos].value);apos++,bpos++;
+            tempSparseMatrix.InsertTerm(matrix.array[bpos].row,matrix.array[bpos].col,this->array[apos].value+matrix.array[bpos].value);apos++,bpos++;
         }
     }
     while(apos<this->terms) //拷贝剩余矩阵元素
     {
-        tempSparseMatrix.InsertTerm(this->termArray[apos].row,this->termArray[apos].col,this->termArray[apos].value);apos++;
+        tempSparseMatrix.InsertTerm(this->array[apos].row,this->array[apos].col,this->array[apos].value);apos++;
     }
     while(bpos<matrix.terms)//拷贝剩余矩阵元素
     {
-        tempSparseMatrix.InsertTerm(matrix.termArray[bpos].row,matrix.termArray[bpos].col,matrix.termArray[bpos].value);bpos++;
+        tempSparseMatrix.InsertTerm(matrix.array[bpos].row,matrix.array[bpos].col,matrix.array[bpos].value);bpos++;
     }
     return tempSparseMatrix;
 }
@@ -137,8 +137,8 @@ SparseMatrix SparseMatrix::Mult(SparseMatrix matrix)
     matrix=matrix.FastTranspose();
     for (int i = 0; i < this->terms; i++) {
         for (int j = 0; j < matrix.terms; j++) {
-            if(this->termArray[i].col==matrix.termArray[j].col){
-                tempSparseMatrix.InsertTerm(this->termArray[i].row, matrix.termArray[j].row, this->termArray[i].value * matrix.termArray[j].value);
+            if(this->array[i].col==matrix.array[j].col){
+                tempSparseMatrix.InsertTerm(this->array[i].row, matrix.array[j].row, this->array[i].value * matrix.array[j].value);
             }
         }
     }
@@ -150,29 +150,29 @@ void SparseMatrix::InsertTerm(int row, int col, int value)
     if (this->terms == this->capacity)
     {
         if(terms==0){
-            this->termArray=new MatrixTerm;
+            this->array=new MatrixNode;
             this->capacity=1;
         }
         else{
             this->capacity *= 2;
-            MatrixTerm* tempTerm = new MatrixTerm[this->capacity];
+            MatrixNode* tempTerm = new MatrixNode[this->capacity];
             for (int i = 0; i < this->terms; i++) {
-            tempTerm[i] = this->termArray[i];
+            tempTerm[i] = this->array[i];
             }
-            if(termArray){
-                delete[]termArray;
+            if(array){
+                delete[]array;
             }
-            this->termArray = tempTerm;
+            this->array = tempTerm;
         }
     }
-    if(row==this->termArray[terms-1].row&&col==this->termArray[terms-1].col){    //与前项位置相同
-        this->termArray[terms-1].value+=value;
-        if(!this->termArray[terms-1].value)this->terms--;    //系数和为零            
+    if(row==this->array[terms-1].row&&col==this->array[terms-1].col){    //与前项位置相同
+        this->array[terms-1].value+=value;
+        if(!this->array[terms-1].value)this->terms--;    //系数和为零            
     }
     else{    //与前面项位置不同
-        this->termArray[terms].row = row;
-        this->termArray[terms].col = col;
-        this->termArray[terms].value = value;
+        this->array[terms].row = row;
+        this->array[terms].col = col;
+        this->array[terms].value = value;
         this->terms++;
     }
 }
