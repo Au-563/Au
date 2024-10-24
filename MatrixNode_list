@@ -1,0 +1,67 @@
+class MatrixNode{
+    friend class SparseMatrix;
+private:
+    int row;            //行数
+    int col;            //列数
+    int value;          //数值
+    MatrixNode* next;   //指向下一个元素(用于行列头节点)
+    MatrixNode* down;   //指向同一列下一个元素
+    MatrixNode* right;  //指向同一行下一个元素
+public:
+    MatrixNode(){}
+    MatrixNode(int row,int col,int value):row(row),col(col),value(value){};
+    void Insert(int row,int col,int value);
+};
+
+class SparseMatrix{
+public:
+    MatrixNode Head;    //头节点
+    MatrixNode* heads;  //行列头节点
+public:
+    SparseMatrix(){}
+    SparseMatrix(int rows,int cols,int count);
+    void Insert(int row,int col,int value);
+};
+
+SparseMatrix::SparseMatrix(int rows,int cols,int count){
+    Head.row=rows;      //记录稀疏矩阵行数
+    Head.col=cols;      //记录稀疏矩阵列数
+    Head.value=count;   //记录稀疏矩阵元素个数
+    heads=new MatrixNode[max(rows,cols)];
+    for(int i=0;i<max(rows,cols);i++){
+        heads[i].right=heads[i].down=NULL;
+    }
+    Head.next=&heads[0];
+    heads[max(rows,cols)-1].next=&Head;
+    for(int i=0;i<max(rows,cols)-1;i++){
+        heads[i].next=&heads[i+1];
+    }
+}
+
+void SparseMatrix::Insert(int row,int col,int value){   
+    MatrixNode* newNode=new MatrixNode(row,col,value);     
+    if(heads[row].right==NULL){
+        heads[row].right=newNode;
+        newNode->right=&heads[row];
+    }
+    else{
+        MatrixNode* temp=&heads[row];
+        while(temp->right->col<newNode->col&&temp->right!=&heads[row]){
+            temp=temp->right;
+        }
+        newNode->right=temp->right;
+        temp->right=newNode;
+    }
+    if(heads[col].down==NULL){
+        heads[col].down=newNode;
+        newNode->down=&heads[col];
+    }
+    else{
+        MatrixNode* temp=&heads[col];
+        while(temp->down->row<newNode->row&&temp->down!=&heads[col]){
+            temp=temp->down;
+        }
+        newNode->down=temp->down;
+        temp->down=newNode;
+    }
+}
