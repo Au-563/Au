@@ -1,0 +1,84 @@
+template<class T>
+class GenListNode{
+    friend class GenList<T>;
+private:
+    GenListNode* next;          //next节点
+    bool tag;                   //true-为表，false-为数据
+    union{
+        GenListNode<T>* down;   //表
+        T data;                 //数据
+    };
+};
+
+template<class T>
+class GenList{
+private:
+    GenListNode<T>* first;
+public:
+    void Copy(const GenList<T>& l) const;                   //复制广义表
+    GenListNode<T>* Copy(const GenListNode<T>* p) const;    //辅助复制广义表
+    bool operator==(const GenList<T>& l) const;             //判断广义表是否相等
+    bool Equal(const GenListNode<T>* p,const GenListNode<T>* q) const;
+                                                            //判断节点是否相
+    int Depth();                                            //获取广义表深度
+    int Depth(const GenListNode<T>* p);                     //辅助获取广义表深度
+};
+
+template<class T>
+void GenList<T>::Copy(const GenList<T>& l) const{
+    first=Copy(l.first);
+}
+
+template<class T>
+GenListNode<T>* GenList<T>::Copy(const GenListNode<T>* p) const{
+    GenListNode<T>* temp=NULL;
+    if(p){
+        temp=new GenListNode<T>;
+        temp->tag=p->tag;
+        if(p->tag)
+            temp->down=Copy(p->down);
+        else
+            temp->data=p->data;
+        temp->next=Copy(p->next);
+    }
+    return temp;
+}
+
+template<class T>
+bool GenList<T>::operator==(const GenList<T>& l) const{
+    return Equal(first,l.first);
+}
+
+template<class T>
+bool GenList<T>::Equal(const GenListNode<T>* p,const GenListNode<T>* q)const{
+    if((!p)&&(!q))
+        return true;
+    if(p&&q&&(p->tag==q->tag)){
+        //表
+        if(q->tag)
+            return Equal(p->down,q->down)&&Equal(p->next,q->next);
+        //数据
+        else
+            return (p->data==q->data)&&Equal(p->next,q->next);
+    }
+    return false;
+}
+
+template<class T>
+int GenList<T>::Depth(){
+    return Depth(first);
+}
+
+template<class T>
+int GenList<T>::Depth(const GenListNode<T>* p){
+    if(!p)
+        return 0;
+    GenListNode<T>* temp=p;
+    int m=0;
+    //获取整行最大深度
+    while(temp)
+        if(temp->tag)
+            m=max(m,Depth(temp->down));
+        temp=temp->next;    
+    return m+1;
+}
