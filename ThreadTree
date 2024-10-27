@@ -1,0 +1,70 @@
+template<class T>
+class ThreadTree;
+
+template<class T>
+class ThreadTreeNode {
+    friend class ThreadTree<T>;
+public:
+    T data;                         //节点信息
+    ThreadTreeNode<T>* leftChild;   //左孩子
+    ThreadTreeNode<T>* rightChild;  //右孩子
+    bool leftThread;                //左线索（true时leftChild指向中序遍历前驱节点，false时leftChild指向左孩子）
+    bool rightThread;               //右线索（true时rightChild指向中序遍历后驱节点，false时rightChild指向右孩子）  
+public:
+    ThreadTreeNode() :leftChild(NULL), rightChild(NULL),leftThread(true),rightThread(true) {}
+    ThreadTreeNode(T data) :data(data), leftChild(NULL), rightChild(NULL),leftThread(true),rightThread(true) {}
+    void InsertLeftChild(T data) {   //插入左孩子
+        ThreadTreeNode* temp = new ThreadTreeNode(data);
+        temp->leftChild=this->leftChild;
+        temp->rightChild=this;
+        if(this->leftChild)
+            this->leftThread=false;
+        this->leftChild = temp;
+    }
+    void InsertRightChild(T data) {  //插入右孩子
+        ThreadTreeNode* temp = new ThreadTreeNode(data);
+        temp->leftChild=this;
+        temp->rightChild=this->rightChild;
+        if(this->rightChild)
+            this->rightThread=false;
+        this->rightChild = temp;
+    }
+};
+
+template<class T>
+class ThreadTree {
+public:
+    ThreadTreeNode<T>* root;             //根节点（root->leftChild为真正的根节点，root->rightChild指向root自身）
+public:
+    ThreadTree() {
+        this->root = new ThreadTreeNode<T>;
+        ThreadTreeNode<T>* temp=new ThreadTreeNode<T>;
+        this->root->leftChild=temp;
+        this->root->rightChild=this->root;
+        this->root->leftThread=false;
+        this->root->rightChild=false;
+        temp->leftchild=this->root;
+        temp->rightchild=this->root;
+    }
+    ThreadTree(T data) {
+        this->root = new ThreadTreeNode<T>;
+        ThreadTreeNode<T>* temp=new ThreadTreeNode<T>(data);
+        this->root->leftChild=temp;
+        this->root->rightChild=this->root;
+        this->root->leftThread=false;
+        this->root->rightThread=false;
+        temp->leftChild=this->root;
+        temp->rightChild=this->root;
+    }
+    ThreadTreeNode<T>* NextNode(ThreadTreeNode<T>* currentNode){
+        ThreadTreeNode<T>* temp=currentNode->rightChild;
+        if(!currentNode->rightThread){
+            while(!temp->leftThread){
+                temp=temp->leftChild;
+            }
+        }
+        if(temp==root)
+            return NULL;
+        return temp;
+    }
+};
