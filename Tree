@@ -1,0 +1,155 @@
+template<class T>
+class TreeNode {
+    friend class Tree<T>;
+public:
+    T data;                     //节点信息
+    TreeNode<T>* leftChild;     //左孩子
+    TreeNode<T>* rightChild;    //右孩子
+public:
+    TreeNode() :leftChild(NULL), rightChild(NULL) {}
+    TreeNode(T data) :data(data), leftChild(NULL), rightChild(NULL) {}
+    TreeNode(T data, TreeNode<T>* leftChild, TreeNode<T>* rightChild) :data(data), leftChild(leftChild), rightChild(rightChild) {}
+    void InsertLeftChild(T data) {   //插入左孩子
+        TreeNode* temp = new TreeNode(data);
+        this->leftChild = temp;
+    }
+    void InsertRightChild(T data) {  //插入右孩子
+        TreeNode* temp = new TreeNode(data);
+        this->rightChild = temp;
+    }
+};
+
+template<class T>
+class Tree {
+public:
+    TreeNode<T>* root;             //根节点
+public:
+    Tree() {
+        this->root = new TreeNode<T>;
+        this->root->leftChild = NULL;
+        this->root->rightChild = NULL;
+    }
+    Tree(T data) {
+        this->root->data = data;
+        this->root = new TreeNode<T>;
+        this->root->leftChild = NULL;
+        this->root->rightChild = NULL;
+    }
+    void Inoder1(TreeNode<T>* rootNode);                //中序遍历（递归）
+    void Preoder1(TreeNode<T>* rootNode);               //先序遍历（递归）
+    void Postoder1(TreeNode<T>* rootNode);              //后序遍历（递归）
+    void Inoder2(TreeNode<T>* rootNode);                //中序遍历（迭代）
+    void Preoder2(TreeNode<T>* rootNode);               //先序遍历（迭代）
+    void Postoder2(TreeNode<T>* rootNode);              //后序遍历（迭代）
+    TreeNode<T>* Copy(TreeNode<T>* rootNode);           //复制二叉树
+    bool operator==(Tree<T> tree);                      //判断是否相等
+    bool Equal(TreeNode<T>* node1, TreeNode<T>* node2);  //辅助判断是否相等
+
+};
+
+template<class T>
+void Tree<T>::Inoder1(TreeNode<T>* rootNode) {
+    TreeNode<T>* currentNode = rootNode;
+    if (currentNode) {
+        Inoder1(currentNode->leftChild);
+        cout << currentNode->data;
+        Inoder1(currentNode->rightChild);
+    }
+}
+
+template<class T>
+void Tree<T>::Preoder1(TreeNode<T>* rootNode) {
+    TreeNode<T>* currentNode = rootNode;
+    if (currentNode) {
+        cout << currentNode->data;
+        Preoder1(currentNode->leftChild);
+        Preoder1(currentNode->rightChild);
+    }
+}
+
+template<class T>
+void Tree<T>::Postoder1(TreeNode<T>* rootNode) {
+    TreeNode<T>* currentNode = rootNode;
+    if (currentNode) {
+        Postoder1(currentNode->leftChild);
+        Postoder1(currentNode->rightChild);
+        cout << currentNode->data;
+    }
+}
+
+template<class T>
+void Tree<T>::Inoder2(TreeNode<T>* rootNode) {
+    TreeNode<T>* currentNode = rootNode;
+    stack<TreeNode<T>*> nodes;
+    while (1) {
+        while (currentNode) {
+            nodes.push(currentNode);
+            currentNode = currentNode->leftChild;
+        }
+        if (nodes.empty())
+            return;
+        currentNode = nodes.top();
+        nodes.pop();
+        cout << currentNode->data;
+        currentNode = currentNode->rightChild;
+    }
+}
+
+template<class T>
+void Tree<T>::Preoder2(TreeNode<T>* rootNode) {
+    TreeNode<T>* currentNode = rootNode;
+    stack<TreeNode<T>*> nodes;
+    nodes.push(currentNode);
+    while (!nodes.empty()) {
+        TreeNode<T>* temp = nodes.top();
+        cout << temp->data;
+        nodes.pop();
+        if (temp->rightChild)
+            nodes.push(temp->rightChild);
+        if (temp->leftChild)
+            nodes.push(temp->leftChild);
+    }
+}
+
+template<class T>
+void Tree<T>::Postoder2(TreeNode<T>* rootNode) {
+    TreeNode<T>* currentNode = rootNode;
+    stack<TreeNode<T>*> nodes;
+    TreeNode<T>* visitedNode = currentNode;
+    while (currentNode || !nodes.empty()) {
+        while (currentNode) {
+            nodes.push(currentNode);
+            currentNode = currentNode->leftChild;
+        }
+        currentNode = nodes.top();
+        //上一步未访问当前节点的右节点
+        if (currentNode->rightChild && currentNode->rightChild != visitedNode)
+            currentNode = currentNode->rightChild;
+        //上一步访问过当前节点的右节点
+        else {
+            cout << currentNode->data;
+            visitedNode = currentNode;
+            currentNode = NULL;   //防止重复访问左子树
+            nodes.pop();
+        }
+    }
+}
+
+template<class T>
+TreeNode<T>* Tree<T>::Copy(TreeNode<T>* rootNode) {
+    if (rootNode)
+        return new TreeNode<T>(rootNode->data, Copy(rootNode->leftChild), Copy(rootNode->rightChild));
+    return NULL;
+}
+
+template<class T>
+bool Tree<T>::operator==(Tree<T> tree) {
+    return Equal(this->root, tree.root);
+}
+
+template<class T>
+bool Tree<T>::Equal(TreeNode<T>* node1, TreeNode<T>* node2) {
+    if (!node1 && !node2)
+        return true;
+    return node1 && node2 && (node1->data == node2->data) && Equal(node1->leftChild, node2->leftChild) && Equal(node1->rightChild, node2->rightChild);
+}
