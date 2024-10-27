@@ -1,7 +1,7 @@
 template<class T>
 class TreeNode {
     friend class Tree<T>;
-public:
+private:
     T data;                     //节点信息
     TreeNode<T>* leftChild;     //左孩子
     TreeNode<T>* rightChild;    //右孩子
@@ -21,7 +21,7 @@ public:
 
 template<class T>
 class Tree {
-public:
+private:
     TreeNode<T>* root;             //根节点
 public:
     Tree() {
