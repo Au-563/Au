@@ -1,10 +1,7 @@
 template<class T>
-class ThreadTree;
-
-template<class T>
 class ThreadTreeNode {
     friend class ThreadTree<T>;
-public:
+private:
     T data;                         //节点信息
     ThreadTreeNode<T>* leftChild;   //左孩子
     ThreadTreeNode<T>* rightChild;  //右孩子
@@ -33,7 +30,7 @@ public:
 
 template<class T>
 class ThreadTree {
-public:
+private:
     ThreadTreeNode<T>* root;             //根节点（root->leftChild为真正的根节点，root->rightChild指向root自身）
 public:
     ThreadTree() {
