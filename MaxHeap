@@ -1,0 +1,64 @@
+template<class T>
+class MaxHeap{
+private:
+    T* heap;        //元素数组、
+    int size;       //堆中元素数量
+    int capacity;   //数组heap的大小
+public:
+    MaxHeap():size(0),capacity(1){
+        heap=new T[2];
+    };
+    MaxHeap(int capacity):size(0),capacity(capacity){
+        heap=new T[capacity+1]; //heap[0]不使用
+    };
+    void Push(const T& node);               //大顶堆插入
+    void Pop();                             //大顶堆删除（删除堆顶元素）
+    void ChangeSize(int capacity);          //扩容
+};
+
+template<class T>
+void MaxHeap<T>::Push(const T& data){
+    if(size==capacity)
+        ChangeSize(capacity*2);
+        capacity*=2;
+    int currentNode=++size;
+    while(currentNode!=1&&heap[currentNode/2]<data){
+        heap[currentNode]=heap[currentNode/2];
+        currentNode/=2;
+    }
+    heap[currentNode]=data;
+}
+
+template<class T>
+void MaxHeap<T>::Pop(){
+    if(!size)
+        throw"Heap is empty!";
+    T last=heap[size--];
+    int current=1;
+    int child=2;
+    while(child<=size){
+        //比较child和兄弟，获取最大孩子
+        if(child<size&&heap[child]<heap[child+1])
+            child++;
+        //尾节点大于两个孩子，直接将尾节点值赋给父亲
+        if(last>=heap[child])
+            break;
+        heap[current]=heap[child];
+        current=child;
+        child*=2;
+    }
+    heap[current]=last;
+}
+
+template<class T>
+void MaxHeap<T>::ChangeSize(int capacity){
+    if(capacity<=this->capacity)
+        throw"new capacity should be bigger than old capacity";
+    T* temp=new T[capacity];
+    for(int i=0;i<this->capacity;i++){
+        temp[i]=this->heap[i];
+    }
+    delete[]this->heap;
+    this->heap=temp;
+    this->capacity=capacity;
+}
