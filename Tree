@@ -11,10 +11,14 @@ public:
     TreeNode(T data, TreeNode<T>* leftChild, TreeNode<T>* rightChild) :data(data), leftChild(leftChild), rightChild(rightChild) {}
     void InsertLeftChild(T data) {   //插入左孩子
         TreeNode* temp = new TreeNode(data);
+        temp->leftChild=NULL;
+        temp->rightChild=NULL;
         this->leftChild = temp;
     }
     void InsertRightChild(T data) {  //插入右孩子
         TreeNode* temp = new TreeNode(data);
+        temp->leftChild=NULL;
+        temp->rightChild=NULL;
         this->rightChild = temp;
     }
 };
@@ -30,8 +34,8 @@ public:
         this->root->rightChild = NULL;
     }
     Tree(T data) {
-        this->root->data = data;
         this->root = new TreeNode<T>;
+        this->root->data = data;
         this->root->leftChild = NULL;
         this->root->rightChild = NULL;
     }
@@ -41,9 +45,10 @@ public:
     void Inoder2(TreeNode<T>* rootNode);                //中序遍历（迭代）
     void Preoder2(TreeNode<T>* rootNode);               //先序遍历（迭代）
     void Postoder2(TreeNode<T>* rootNode);              //后序遍历（迭代）
+    void LevelOrder(TreeNode<T>* rootNode);             //层次遍历
     TreeNode<T>* Copy(TreeNode<T>* rootNode);           //复制二叉树
     bool operator==(Tree<T> tree);                      //判断是否相等
-    bool Equal(TreeNode<T>* node1, TreeNode<T>* node2);  //辅助判断是否相等
+    bool Equal(TreeNode<T>* node1, TreeNode<T>* node2); //辅助判断是否相等
 
 };
 
@@ -132,6 +137,23 @@ void Tree<T>::Postoder2(TreeNode<T>* rootNode) {
             currentNode = NULL;   //防止重复访问左子树
             nodes.pop();
         }
+    }
+}
+
+template<class T>
+void Tree<T>::LevelOrder(TreeNode<T>* rootNode){
+    queue<TreeNode<T>*> q;
+    TreeNode<T>* currentNode=rootNode;
+    while(currentNode){
+        cout<<currentNode->data;
+        if(currentNode->leftChild)
+            q.push(currentNode->leftChild);
+        if(currentNode->rightChild)
+            q.push(currentNode->rightChild);
+        if(q.empty())
+            return;
+        currentNode=q.front();
+        q.pop();
     }
 }
 
