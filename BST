@@ -1,0 +1,146 @@
+template<class K,class E>
+class Pair{
+public:
+    K key;
+private:
+    E value;
+public:
+    Pair(){};
+    Pair(K k,E v):key(k),value(v){};
+    E GetVal() const{
+        return value;
+    }
+    void SetVal(E v){
+        value=v;
+    }
+};
+
+template<class T>
+class TreeNode{
+public:
+    T data;
+    TreeNode<T>* leftChild;
+    TreeNode<T>* rightChild;
+public:
+    TreeNode():leftChild(NULL),rightChild(NULL){}
+    TreeNode(T t):data(t),leftChild(NULL),rightChild(NULL){}
+    void InsertLeftChild(T t){
+        TreeNode<T>* temp=new TreeNode<T>(t);
+        temp->leftChild=NULL;
+        temp->rightChild=NULL;
+        this->leftChild=temp;
+    }
+    void InsertRightChild(T t){
+        TreeNode<T>* temp=new TreeNode<T>(t);
+        temp->leftChild=NULL;
+        temp->rightChild=NULL;
+        this->rightChild=temp;
+    }
+};
+
+template<class K,class E>
+class BST{
+public:
+    TreeNode<Pair<K,E>>* root;
+public:
+    BST():root(NULL){}
+    BST(Pair<K,E> p){
+        this->root=new TreeNode<Pair<K,E>>(p);
+    }
+    void Insert(const Pair<K,E>& p);                        //插入
+    void Delete(const K& k);                                //删除
+    TreeNode<Pair<K,E>>* Pop(TreeNode<Pair<K,E>> *p);       //删除头节点(辅助Pop()函数)
+    Pair<K,E>* Get(TreeNode<Pair<K,E>>* p,const K& key);    //查找 高度为h的二叉查找树通过键值排序搜索的时间复杂度为O(h)
+};
+
+template<class K,class E>
+void BST<K,E>::Insert(const Pair<K,E>& p){
+    if(!this->root){
+        this->root=new TreeNode<Pair<K,E>>(p);
+        return;
+    }
+    TreeNode<Pair<K,E>> *cur=this->root,*pos=NULL;
+    while(cur){
+        if(p.key<cur->data.key){
+            pos=cur;
+            cur=cur->leftChild;
+        }
+        else if(p.key>cur->data.key){
+            pos=cur;
+            cur=cur->rightChild;
+        }
+        else
+            cur->data.SetVal(p.GetVal());
+            return;
+    }
+    if(p.key<pos->data.key)
+        pos->InsertLeftChild(p);
+    else    
+        pos->InsertRightChild(p);
+}   
+
+template<class K,class E>
+void BST<K,E>::Delete(const K& k){
+    TreeNode<Pair<K,E>> *cur=this->root,*pos=NULL;
+    while(cur){
+        if(k<cur->data.key){
+            pos=cur;
+            cur=cur->leftChild;
+        }
+        else if(k>cur->data.key){
+            pos=cur;
+            cur=cur->rightChild;
+        }
+        else{
+            //cur是pos的左孩子
+            if(pos->leftChild&&pos->leftChild->data.key==cur->data.key){
+                TreeNode<Pair<K,E>> *temp=cur;
+                pos->leftChild=this->Pop(cur);
+                return;
+            }
+            //cur是pos的右孩子
+            else if(pos->rightChild&&pos->rightChild->data.key==cur->data.key){
+                TreeNode<Pair<K,E>> *temp=cur;
+                pos->rightChild=this->Pop(cur);
+                return;
+            }
+        }
+    }
+    cout<<"Nothing Found"<<endl;
+}
+
+template<class K,class E>
+TreeNode<Pair<K,E>>* BST<K,E>::Pop(TreeNode<Pair<K,E>> *p){
+    //没有孩子
+    if(!p->leftChild&&!p->rightChild)
+        return NULL;
+    //只有左孩子
+    else if(p->leftChild&&!p->rightChild)
+        return p->leftChild;
+    //只有右孩子
+    else if(!p->leftChild&&p->rightChild)
+        return p->rightChild;
+    //两个孩子
+    else{
+        TreeNode<Pair<K,E>>* cur=p;
+        TreeNode<Pair<K,E>>* pos=NULL;
+        while(cur->rightChild){
+            pos=cur;
+            cur=cur->rightChild;
+        }
+        p->data=cur->data;
+        pos->rightChild=Pop(cur);
+        return p;
+    }
+}
+
+template<class K,class E>
+Pair<K,E>* BST<K,E>::Get(TreeNode<Pair<K,E>>* p,const K& key){
+    if(!p)
+        return NULL;
+    if(key<p->data.key)
+        return Get(p->leftChild,key);
+    if(key>p->data.key)
+        return Get(p->rightChild,key);
+    return &p->data;
+}
