@@ -1,0 +1,65 @@
+template<class T>
+class Node{
+public:
+    T data;
+    Node* child;
+    Node* brother;
+public:
+    Node():child(NULL),brother(NULL){}
+    Node(T data):data(data),child(NULL),brother(NULL){}
+    void InsertChild(T data){
+        Node* newNode=new Node(data);
+        if(!this->child)
+            this->child=newNode;
+        else{
+            Node* temp=this->child;
+            while(temp->brother){
+                temp=temp->brother;
+            }
+            temp->brother=newNode;
+        }
+    }
+    void InsertBrother(T data){
+        Node* newNode=new Node(data);
+        Node<T>* temp=this;
+        while(temp->brother){
+            temp=temp->brother;
+        }
+            this->brother=newNode;
+    }
+};
+
+template<class T>
+class Forest{
+public:
+    Node<T>* root;
+public:
+    Forest():root(NULL){
+        this->root=new Node<T>;
+    }
+    Forest(Node<T> r){
+        this->root=new Node<T>(r.data);
+    }
+    void Inoder(){
+        Node<T>* bro=this->root;
+        while(bro){
+            InoderTree(bro);
+            bro=bro->brother;
+            cout<<endl;
+        }
+    }
+    void InoderTree(Node<T>* root){
+        queue<Node<T>*> nodes;
+        nodes.push(root);
+        while(!nodes.empty()){
+            Node<T>* node=nodes.front();
+            nodes.pop();
+            cout<<node->data<<"  ";
+            Node<T>* temp=node->child;
+            while(temp){
+                nodes.push(temp);
+                temp=temp->brother;
+            }
+        }
+    }
+};
