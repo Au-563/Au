@@ -1,0 +1,155 @@
+template<class K,class E>
+class Pair{
+public:
+    K key;
+private:
+    E value;
+public:
+    Pair():key(NULL),value(NULL){}
+    Pair(K k,E v):key(k),value(v){}
+    E GetVal() const{
+        return value;
+    }
+    void SetVal(E v){
+        value=v;
+    }
+};
+
+template<class K,class E>
+class Node{
+public:
+    Pair<K,E> pair;
+    int idx;
+public:
+    Node():pair(Pair<K,E>()),idx(NULL){}
+    Node(Pair<K,E> p,int idx){
+        this->pair=p;
+        this->idx=idx;
+    }
+};
+
+template<class K,class E>
+class Run{
+public:
+    Pair<K,E>* p;
+    int size;
+    int capacity;
+public:
+    Run():p(NULL),size(0),capacity(2){
+        this->p=new Pair<K,E>[this->capacity];
+    };
+    Run(Pair<K,E>* p,int length):size(length),capacity(2*length){
+        this->p=new Pair<K,E>[this->capacity];
+        for(int i=0;i<this->size;i++){
+            this->p[i]=p[i];
+        }
+        Sort();
+    }
+    int Size(){
+        return this->size;
+    }
+    void Expand(){
+        Pair<K,E>* temp=new Pair<K,E>[this->capacity*2];
+        for(int i=0;i<size;i++){
+            temp[i]=this->p[i];
+        }
+        delete[]this->p;
+        this->p=temp;
+        this->capacity*=2;
+    }
+    void Sort(){
+        for(int i=1;i<this->size;i++){
+            for(int j=i;j>0;j--){
+                if(this->p[j].key<this->p[j-1].key)
+                    swap(this->p[j],this->p[j-1]);
+            }
+        }
+    }
+    Pair<K,E> Top(){
+        return this->p[0];
+    }
+    void Insert(Pair<K,E> p){
+        if(this->size==this->capacity)
+            this->Expand();
+        this->p[size]=p;
+        this->size++;
+    }
+    void Pop(){
+        for(int i=0;i<this->size-1;i++){
+            this->p[i]=this->p[i+1];
+        }
+        this->size--;
+    }
+};
+
+template<class K,class E>
+Run<K,E> WinnerTreeSort(Run<K,E>* r,int size){
+    int length=size;
+    for(int i=0;i<=log(size-1)/log(2);i++){
+        length+=pow(2,i);
+    }
+    //构建VectorTree
+    Node<K,E>* vectorTree=new Node<K,E>[length-size+(int)pow(log(size-1)/log(2)+1,2)];
+    for(int i=length-size+1;i<=length;i++){
+        vectorTree[i]=Node(r[i-length+size-1].Top(),i);
+        r[i-length+size-1].Pop();
+    }
+    int idx=length-size;
+    while (idx>0)
+    {
+        if(vectorTree[2*idx].pair.key&&vectorTree[2*idx+1].pair.key){
+            vectorTree[idx]=(vectorTree[2*idx].pair.key<=vectorTree[2*idx+1].pair.key)?vectorTree[2*idx]:vectorTree[2*idx+1];
+        }
+        else if(vectorTree[2*idx].pair.key&&!vectorTree[2*idx+1].pair.key){
+            vectorTree[idx]=vectorTree[2*idx],idx;
+        }
+        idx--;
+    }
+    //判断排序是否结束
+    bool judge=1;
+    //储存排序结果
+    Run<K,E> res;
+    //根节点
+    Node<K,E> root=vectorTree[1];
+    while(judge){
+        judge=0;
+        //重排VectorTree
+        if(r[root.idx-length+size-1].size>0){
+            vectorTree[root.idx].pair=r[root.idx-length+size-1].Top();
+            r[root.idx-length+size-1].Pop();
+        }
+        else{
+            vectorTree[root.idx]=Node<int,int>();
+        }
+        idx=length-size;
+        while (idx>0)
+        {
+            if(vectorTree[2*idx].pair.key&&vectorTree[2*idx+1].pair.key){
+                vectorTree[idx]=(vectorTree[2*idx].pair.key<=vectorTree[2*idx+1].pair.key)?vectorTree[2*idx]:vectorTree[2*idx+1];
+            }
+            else if(vectorTree[2*idx].pair.key&&!vectorTree[2*idx+1].pair.key){
+                vectorTree[idx]=vectorTree[2*idx];
+            }
+            else if(!vectorTree[2*idx].pair.key&&vectorTree[2*idx+1].pair.key){
+                vectorTree[idx]=vectorTree[2*idx+1];
+            }
+            else{
+                vectorTree[idx]=Node<K,E>();
+            }
+            idx--;
+        }
+        //存储根节点
+        res.Insert(root.pair);
+        //更新节点
+        root=vectorTree[1];
+        //判断排序是否结束
+        for(int i=0;i<size;i++){
+            if(r[i].Size()>0){
+                judge=1;
+                break;
+            }
+        }
+    }
+    res.Insert(root.pair);
+    return res;
+}
