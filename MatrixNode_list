@@ -10,7 +10,6 @@ private:
 public:
     MatrixNode(){}
     MatrixNode(int row,int col,int value):row(row),col(col),value(value){};
-    void Insert(int row,int col,int value);
 };
 
 class SparseMatrix{
