@@ -1,0 +1,117 @@
+class Sets{
+public:
+    int* parent;//父节点
+    int* col;   //用于折叠算法
+    int* count; //结点数
+    int n;      //元素总数
+    int m;      //最大值
+public:
+    Sets(){}
+    Sets(int* arr,int n):n(n){
+        if(n<2)
+            throw"Must have 2 elements";
+            m=arr[0];
+        for(int i=1;i<n;i++){
+            m=arr[i]>m?arr[i]:m;
+        }
+        parent=new int[m+1];
+        col=new int[m+1];
+        count=new int[m+1];
+        parent[arr[0]]=-1;
+        col[arr[0]]=-1;
+        for(int i=1;i<n;i++){
+            parent[arr[i]]=arr[0];
+            col[arr[i]]=arr[0];
+        }
+        for(int i=0;i<=m;i++)
+            count[i]=1;
+        count[arr[0]]=n;
+    }
+    void Print(){
+        for(int i=0;i<=this->m;i++)
+            cout<<this->count[i]<<endl;
+    }
+    void Add(Sets sets){
+        for(int i=0;i<m;i++){
+            for(int j=0;j<sets.m;j++){
+                if((this->parent[i]>=0||this->parent[i]==-1)&&(sets.parent[i]>=0||sets.parent[i]==-1))
+                    if(i==j)
+                        throw"Duplicate Element";
+            }
+        }
+        int* tempParent=new int[max(this->m,sets.m)+2];
+        int* tempCol=new int[max(this->m,sets.m)+2];
+        int* tempCount=new int[max(this->m,sets.m)+2];
+        for(int i=0;i<=this->m;i++){
+            if(this->parent[i]==-1||this->parent[i]>=0){
+                tempParent[i]=this->parent[i];
+                tempCol[i]=this->col[i];
+                tempCount[i]=this->count[i];
+            }
+        }
+        for(int i=0;i<=sets.m;i++){
+            if(sets.parent[i]==-1||sets.parent[i]>=0){
+                tempParent[i]=sets.parent[i];
+                tempCol[i]=sets.col[i];
+                tempCount[i]=sets.count[i];
+            }
+        }
+        delete[]this->parent;
+        this->parent=tempParent;
+        delete[]this->col;
+        this->col=tempCol;
+        delete[]this->count;
+        this->count=tempCount;
+        this->n+=sets.n;
+        this->m=this->m>sets.m?this->m:sets.m;
+    }
+    void SimpleUnion(int i,int j){
+        if((parent[i]>=0||parent[i]==-1)&&(parent[j]>=0||parent[j]==-1)){
+            parent[i]=j;
+            col[i]=j;
+            count[j]+=count[i];
+            while(parent[j]!=-1){
+                count[parent[j]]+=count[j]-1;
+                j=parent[j];
+            }
+            for(int k=0;k<this->m;k++){
+                if(parent[k]==i)
+                    col[k]=j;
+            }
+        }
+        else    
+            throw"Error Operation";
+    }
+    void WeightUnion(int i,int j){
+        if((parent[i]>=0||parent[i]==-1)&&(parent[j]>=0||parent[j]==-1)){
+            if(count[i]<count[j]){
+                parent[i]=j;
+                for(int k=0;k<this->m;k++){
+                    if(parent[k]==i)
+                        col[k]=j;
+                }
+                count[j]+=count[i];
+            }
+            else{
+                parent[j]=i;
+                for(int k=0;k<this->m;k++){
+                    if(parent[k]==i)
+                        col[k]=j;
+                }
+                count[i]+=count[j];
+            }
+        }
+        else    
+            throw"Error Operation";
+    }
+    //常规查找
+    int SimpleFind(int i){
+        while(parent[i]>=0)
+            i=parent[i];
+        return i;
+    }
+    //折叠算法
+    int CollapsingFind(int i){
+        return col[i];
+    }
+};
