@@ -1,3 +1,6 @@
+#include<iostream>
+using namespace std;
+
 template<class T>
 class Graph{    //无向图     
 public:
@@ -25,10 +28,16 @@ public:
         return -1;
     }
     void Print(T** graph,int v){
+        cout<<"pair"<<endl;
+        for(int i=0;i<this->v;i++){
+            cout<<this->pair[i]<<"\t";
+        }
+        cout<<"\n\ngraph"<<endl;
         for(int i=0;i<v;i++){
-            for(int j=0;j<this->v;j++)
-                cout<<graph[i][j]<<" ";
-            cout<<endl;
+            for(int j=0;j<this->v;j++){
+                cout<<graph[i][j]<<"\t";
+            }
+            cout<<"\n"<<endl;
         }
         cout<<endl;
     }
@@ -195,3 +204,27 @@ public:
         return path;
     }
 };
+
+int main(){
+    Graph<int> g;
+    for(int i=0;i<7;i++){
+        g.InsertVertex(i);
+    }
+    g.InsertEdge(0,1,28);
+    g.InsertEdge(0,5,10);
+    g.InsertEdge(1,2,16);
+    g.InsertEdge(1,6,14);
+    g.InsertEdge(2,3,12);
+    g.InsertEdge(3,4,22);
+    g.InsertEdge(3,6,18);
+    g.InsertEdge(4,6,24);
+    g.InsertEdge(4,5,25);
+    g.Print(g.graph,g.v);
+    int** krusla=g.Kruskal();
+    int** prim=g.Prim();
+    cout<<"\nkrusla："<<endl;
+    g.Print(krusla,g.v);
+    cout<<"\nPrim："<<endl;
+    g.Print(prim,g.v);
+    return 0;
+}
