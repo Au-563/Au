@@ -48,7 +48,7 @@ public:
         }
         return -1;
     }
-    void InsertVertex(int v){
+    void InsertVertex(T v){
         T* tempPair=new T[++this->v];
         T** tempGraph=new T*[this->v];
         for(int i=0;i<this->v;i++){
@@ -81,7 +81,7 @@ public:
             delete[]this->graph;
         this->graph=tempGraph;
     }
-    void InsertEdge(int u,int v){
+    void InsertEdge(T u,T v){
         graph[GetIdx(u)][GetIdx(v)]=1;
         this->e++;
     }
