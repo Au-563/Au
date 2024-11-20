@@ -5,7 +5,7 @@ using namespace std;
 template<class T>
 class Graph{    //无向图     
 public:
-    int v;      //顶点边数
+    int v;      //顶点数
     int e;      //边数
     T* pair;    //键对
     T** graph;  //邻接矩阵
