@@ -41,7 +41,7 @@ public:
         }
         cout<<endl;
     }
-    void InsertVertex(int v){
+    void InsertVertex(T v){
         T* tempPair=new T[++this->v];
         T** tempGraph=new T*[this->v];
         for(int i=0;i<this->v;i++){
@@ -74,12 +74,12 @@ public:
             delete[]this->graph;
         this->graph=tempGraph;
     }
-    void InsertEdge(int u,int v,int l){
+    void InsertEdge(T u,T v,int l){
         graph[GetIdx(u)][GetIdx(v)]=l;
         graph[GetIdx(v)][GetIdx(u)]=l;
         this->e++;
     }
-    void DeleteVertes(int v){
+    void DeleteVertes(T v){
         int idx=GetIdx(v);
         for(int i=idx;i<this->v-1;i++){
             pair[i]=pair[i+1];
