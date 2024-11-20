@@ -85,7 +85,7 @@ public:
         graph[GetIdx(u)][GetIdx(v)]=1;
         this->e++;
     }
-    void DeleteVertes(int v){
+    void DeleteVertes(T v){
         int idx=GetIdx(v);
         for(int i=idx;i<this->v-1;i++){
             pair[i]=pair[i+1];
@@ -95,7 +95,7 @@ public:
         }
         this->v--;
     }
-    void DeleteEdge(int u,int v){
+    void DeleteEdge(T u,T v){
         graph[GetIdx(u)][GetIdx(v)]=0;
         this->e--;
     }
