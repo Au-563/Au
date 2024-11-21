@@ -1,23 +1,22 @@
 #include<iostream>
-#include<stack>
 using namespace std;
 
 template<class T>
-class Graph{    //无向图     
+class Graph{    //有向图     
 public:
     int v;      //顶点数
     int e;      //边数
     T* pair;    //键对
-    T** graph;  //邻接矩阵
+    int** graph;  //邻接矩阵
 public:
     Graph():v(0),e(0){
-        this->graph=new T*[1];
+        this->graph=new int*[1];
         this->pair=new T[1];
     }
     Graph(int v):v(v),e(0){
-        this->graph=new T*[v];
+        this->graph=new int*[v];
         for(int i=0;i<v;i++){
-            graph[i]=new T[v]{};
+            graph[i]=new int[v]{};
         }
         this->pair=new T[v];
     }
@@ -28,13 +27,19 @@ public:
         }
         return -1;
     }
-    void Print(T** graph,int v){
+    void Print(int** graph,int v){
         cout<<"pair"<<endl;
         for(int i=0;i<this->v;i++){
             cout<<this->pair[i]<<"\t";
         }
         cout<<"\n\ngraph"<<endl;
-        for(int i=0;i<v;i++){
+        cout<<"\t";
+        for(int i=0;i<this->v;i++){
+            cout<<this->pair[i]<<"\t";
+        }
+        cout<<"\n\n";
+        for(int i=0;i<this->v;i++){
+            cout<<this->pair[i]<<"\t";
             for(int j=0;j<this->v;j++){
                 cout<<graph[i][j]<<"\t";
             }
@@ -42,11 +47,11 @@ public:
         }
         cout<<endl;
     }
-    void InsertVertex(int v){
+    void InsertVertex(T v){
         T* tempPair=new T[++this->v];
-        T** tempGraph=new T*[this->v];
+        int** tempGraph=new int*[this->v];
         for(int i=0;i<this->v;i++){
-            tempGraph[i]=new T[this->v]{};
+            tempGraph[i]=new int[this->v]{};
         }
         int idx=0;
         for(;pair[idx]<v&&idx<this->v-1;idx++){
@@ -75,47 +80,46 @@ public:
             delete[]this->graph;
         this->graph=tempGraph;
     }
-    void InsertEdge(int v,int u,int l){
+    void InsertEdge(T v,T u,int l){
         graph[GetIdx(v)][GetIdx(u)]=l;
         this->e++;
     }
-    void DeleteVertes(int v){
-        int idx=GetIdx(v);
-        for(int i=idx;i<this->v-1;i++){
+    void DeleteVertes(T v){
+        for(int i=GetIdx(v);i<this->v-1;i++){
             pair[i]=pair[i+1];
-            for(int j=idx;j<this->v-1;j++){
+            for(int j=GetIdx(v);j<this->v-1;j++){
                 graph[i][j]=graph[i+1][j+1];
             }
         }
         this->v--;
     }
-    void DeleteEdge(int v,int u){
+    void DeleteEdge(T v,T u){
         graph[GetIdx(v)][GetIdx(u)]=0;
         this->e--;
     }
     //最短路径：非负权值 (v->u)
-    int ShortestPath(int v,int u){
+    int ShortestPath(T v,T u){
         int* dist=new int[this->v]{};
         for(int i=0;i<this->v;i++){
-            dist[i]=graph[v][i];
+            dist[i]=graph[GetIdx(v)][i];
         }
         bool* tag=new bool[this->v];
         tag[v]=true;
         for(int i=0;i<this->v-2;i++){
-            int u=Choose(dist,tag,this->v);
-            tag[u]=true;
+            int idx=Choose(dist,tag,this->v);
+            tag[idx]=true;
             for(int j=0;j<this->v;j++){
-                if(!tag[j]&&graph[u][j]>0&&dist[u]+graph[u][j]<dist[j])
-                    dist[j]=dist[u]+graph[u][j];
+                if(!tag[j]&&graph[idx][j]>0&&dist[idx]+graph[idx][j]<dist[j])
+                    dist[j]=dist[idx]+graph[idx][j];
             }
             for(int j=0;j<this->v;j++){
                 if(j==v)
                     continue;
-                if(graph[u][j]>0&&!dist[j])
-                    dist[j]=graph[u][j]+dist[u];
+                if(graph[idx][j]>0&&!dist[j])
+                    dist[j]=graph[idx][j]+dist[idx];
             }
         }
-        return dist[u];
+        return dist[this->GetIdx(u)];
     }
     //返回未被标识已访问的最短dist的下标
     int Choose(int* dist,bool* tag,int l){
@@ -137,20 +141,20 @@ public:
 int main(){
     Graph<int> g;
     for(int i=0;i<=5;i++){
-        g.InsertVertex(i);
+        g.InsertVertex('a'+i);
     }
-    g.InsertEdge(0,1,50);
-    g.InsertEdge(0,3,10);
-    g.InsertEdge(0,2,45);
-    g.InsertEdge(3,0,20);
-    g.InsertEdge(3,4,15);
-    g.InsertEdge(1,3,15);
-    g.InsertEdge(4,1,20);
-    g.InsertEdge(5,4,3);
-    g.InsertEdge(4,2,35);
-    g.InsertEdge(2,4,30);
-    g.InsertEdge(1,2,10);
+    g.InsertEdge('a','b',50);
+    g.InsertEdge('a','d',10);
+    g.InsertEdge('a','c',45);
+    g.InsertEdge('d','a',20);
+    g.InsertEdge('d','e',15);
+    g.InsertEdge('b','d',15);
+    g.InsertEdge('e','b',20);
+    g.InsertEdge('e','e',3);
+    g.InsertEdge('e','c',35);
+    g.InsertEdge('c','e',30);
+    g.InsertEdge('b','c',10);
     g.Print(g.graph,g.v);
-    cout<<"最短路径："<<g.ShortestPath(0,1);
+    cout<<"最短路径："<<g.ShortestPath('a','b');
     return 0;
 }
