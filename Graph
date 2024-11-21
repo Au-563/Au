@@ -4,16 +4,16 @@ public:
     int v;      //顶点数
     int e;      //边数
     T* pair;    //键对
-    T** graph;  //邻接矩阵
+    int** graph;  //邻接矩阵
 public:
     Graph():v(0),e(0){
-        this->graph=new T*[1];
+        this->graph=new int*[1];
         this->pair=new T[1];
     }
     Graph(int v):v(v),e(0){
-        this->graph=new T*[v];
+        this->graph=new int*[v];
         for(int i=0;i<v;i++){
-            graph[i]=new T[v]{};
+            graph[i]=new int[v]{};
         }
         this->pair=new T[v];
     }
@@ -23,21 +23,21 @@ public:
         return false;
     }
     int NumberOfVertices(){ //返回总顶点数
-        return v;
+        return this->v;
     }
     int NumberOfEdges(){    //返回总边数
-        return e;
+        return this->e;
     }
-    int Degree(int u){      //返回以顶点u为起点边数
+    int Degree(T v){      //返回以顶点u为起点边数
         int count=0;
-        for(int i=0;i<this->NumberOfVertices();i++){
-            if(graph[GetIdx(u)][GetIdx(i)])
+        for(int i=0;i<this->v;i++){
+            if(graph[GetIdx(v)][i])
                 count++;
         }
         return count;
     }
-    bool ExistEdge(int u,int v){
-        if(graph[GetIdx(u)][GetIdx(v)])
+    bool ExistEdge(T v,T u){
+        if(graph[GetIdx(v)][GetIdx(u)])
             return true;
         return false;
     }
@@ -48,11 +48,31 @@ public:
         }
         return -1;
     }
+    void Print(int** graph,int v){
+        cout<<"pair"<<endl;
+        for(int i=0;i<this->v;i++){
+            cout<<this->pair[i]<<"\t";
+        }
+        cout<<"\n\ngraph"<<endl;
+        cout<<"\t";
+        for(int i=0;i<this->v;i++){
+            cout<<this->pair[i]<<"\t";
+        }
+        cout<<"\n\n";
+        for(int i=0;i<this->v;i++){
+            cout<<this->pair[i]<<"\t";
+            for(int j=0;j<this->v;j++){
+                cout<<graph[i][j]<<"\t";
+            }
+            cout<<"\n"<<endl;
+        }
+        cout<<endl;
+    }
     void InsertVertex(T v){
         T* tempPair=new T[++this->v];
-        T** tempGraph=new T*[this->v];
+        int** tempGraph=new int*[this->v];
         for(int i=0;i<this->v;i++){
-            tempGraph[i]=new T[this->v]{};
+            tempGraph[i]=new int[this->v]{};
         }
         int idx=0;
         for(;pair[idx]<v&&idx<this->v-1;idx++){
@@ -81,31 +101,30 @@ public:
             delete[]this->graph;
         this->graph=tempGraph;
     }
-    void InsertEdge(T u,T v){
-        graph[GetIdx(u)][GetIdx(v)]=1;
+    void InsertEdge(T v,T u,int l){
+        graph[GetIdx(v)][GetIdx(u)]=l;
         this->e++;
     }
     void DeleteVertes(T v){
-        int idx=GetIdx(v);
-        for(int i=idx;i<this->v-1;i++){
+        for(int i=GetIdx(v);i<this->v-1;i++){
             pair[i]=pair[i+1];
-            for(int j=idx;j<this->v-1;j++){
+            for(int j=GetIdx(v);j<this->v-1;j++){
                 graph[i][j]=graph[i+1][j+1];
             }
         }
         this->v--;
     }
-    void DeleteEdge(T u,T v){
-        graph[GetIdx(u)][GetIdx(v)]=0;
+    void DeleteEdge(T v,T u){
+        graph[GetIdx(v)][GetIdx(u)]=0;
         this->e--;
     }
-    void DFS(T u,T v){
+    void DFS(T v,T u){
         bool* visited=new bool[this->v]{};
         stack<T> s;
-        s.push(u);
+        s.push(v);
         while(!s.empty()){
             cout<<s.top();
-            if(s.top()==v)
+            if(s.top()==u)
                 break;
             int idx=GetIdx(s.top());
             s.pop();
@@ -116,35 +135,21 @@ public:
             }
         }
     }
-    void BFS(T u,T v){
+    void BFS(T v,T u){
         bool* visited=new bool[this->v]{};
-        queue<T> s;
-        s.push(u);
-        while(!s.empty()){
-            cout<<s.front();
-            if(s.front()==v)
+        queue<T> q;
+        q.push(v);
+        while(!q.empty()){
+            cout<<q.front();
+            if(q.front()==u)
                 break;
-            int idx=GetIdx(s.front());
-            s.pop();
+            int idx=GetIdx(q.front());
+            q.pop();
             visited[idx]=1;
             for(int i=0;i<this->v;i++){
                 if(this->graph[idx][i]&&!visited[i])
-                    s.push(pair[i]);
+                    q.push(pair[i]);
             }
         }
-    }
-    void Print(T** graph,int v){
-        cout<<"pair"<<endl;
-        for(int i=0;i<this->v;i++){
-            cout<<this->pair[i]<<"\t";
-        }
-        cout<<"\n\ngraph"<<endl;
-        for(int i=0;i<v;i++){
-            for(int j=0;j<this->v;j++){
-                cout<<graph[i][j]<<"\t";
-            }
-            cout<<"\n"<<endl;
-        }
-        cout<<endl;
     }
 };
