@@ -1,5 +1,8 @@
+#include<iostream>
+using namespace std;
+
 template<class T>
-class Graph{    //有向图    
+class Graph{    //有向图     
 public:
     int v;      //顶点数
     int e;      //边数
@@ -16,30 +19,6 @@ public:
             graph[i]=new int[v]{};
         }
         this->pair=new T[v];
-    }
-    bool IsEmpty(){
-        if(v==0&&e==0)
-            return true;
-        return false;
-    }
-    int NumberOfVertices(){ //返回总顶点数
-        return this->v;
-    }
-    int NumberOfEdges(){    //返回总边数
-        return this->e;
-    }
-    int Degree(T v){      //返回以顶点u为起点边数
-        int count=0;
-        for(int i=0;i<this->v;i++){
-            if(graph[GetIdx(v)][i])
-                count++;
-        }
-        return count;
-    }
-    bool ExistEdge(T v,T u){
-        if(graph[GetIdx(v)][GetIdx(u)])
-            return true;
-        return false;
     }
     int GetIdx(T t){
         for(int i=0;i<this->v;i++){
@@ -118,38 +97,38 @@ public:
         graph[GetIdx(v)][GetIdx(u)]=0;
         this->e--;
     }
-    void DFS(T v,T u){
-        bool* visited=new bool[this->v]{};
-        stack<T> s;
-        s.push(v);
-        while(!s.empty()){
-            cout<<s.top();
-            if(s.top()==u)
-                break;
-            int idx=GetIdx(s.top());
-            s.pop();
-            visited[idx]=1;
-            for(int i=0;i<this->v;i++){
-                if(this->graph[idx][i]&&!visited[i])
-                    s.push(pair[i]);
+    //最短路径，多源 (v->u)
+    int AllLengths(T v,T u){
+        int** dist=new int*[this->v];
+        for(int i=0;i<this->v;i++){
+            dist[i]=new int [this->v];
+            for(int j=0;j<this->v;j++){
+                    dist[i][j]=graph[i][j];
             }
         }
-    }
-    void BFS(T v,T u){
-        bool* visited=new bool[this->v]{};
-        queue<T> q;
-        q.push(v);
-        while(!q.empty()){
-            cout<<q.front();
-            if(q.front()==u)
-                break;
-            int idx=GetIdx(q.front());
-            q.pop();
-            visited[idx]=1;
-            for(int i=0;i<this->v;i++){
-                if(this->graph[idx][i]&&!visited[i])
-                    q.push(pair[i]);
+        for(int i=0;i<this->v;i++){
+            for(int j=0;j<this->v;j++){
+                for(int k=0;k<this->v;k++){
+                    if(dist[i][j]&&dist[j][k]&&dist[i][k]&&(dist[i][j]+dist[j][k]<dist[i][k]))
+                        dist[i][k]=dist[i][j]+dist[j][k];
+                }
             }
         }
+        return dist[this->GetIdx(v)][this->GetIdx(u)];
     }
 };
+
+int main(){
+    Graph<char> g;
+    for(int i=0;i<=2;i++){
+        g.InsertVertex('a'+i);
+    }
+    g.InsertEdge('a','b',4);
+    g.InsertEdge('a','c',11);
+    g.InsertEdge('b','c',2);
+    g.InsertEdge('b','a',6);
+    g.InsertEdge('c','a',3);
+    g.Print(g.graph,g.v);
+    cout<<"最短路径："<<g.AllLengths('a','c');
+    return 0;
+}
