@@ -165,6 +165,7 @@ int main(){
     g.InsertEdge('d','c',-2);
     g.InsertEdge('d','f',-1);
     g.InsertEdge('f','g',3);
+    g.Print(g.graph,g.v);
     cout<<"最短路径："<<g.BellmanFord('a','g');
     return 0;
 }
