@@ -7,16 +7,16 @@ public:
     int v;      //顶点数
     int e;      //边数
     T* pair;    //键对
-    T** graph;  //邻接矩阵
+    int** graph;  //邻接矩阵
 public:
     Graph():v(0),e(0){
-        this->graph=new T*[1];
+        this->graph=new int*[1];
         this->pair=new T[1];
     }
     Graph(int v):v(v),e(0){
-        this->graph=new T*[v];
+        this->graph=new int*[v];
         for(int i=0;i<v;i++){
-            graph[i]=new T[v]{};
+            graph[i]=new int[v]{};
         }
         this->pair=new T[v];
     }
@@ -27,13 +27,19 @@ public:
         }
         return -1;
     }
-    void Print(T** graph,int v){
+    void Print(int** graph,int v){
         cout<<"pair"<<endl;
         for(int i=0;i<this->v;i++){
             cout<<this->pair[i]<<"\t";
         }
         cout<<"\n\ngraph"<<endl;
-        for(int i=0;i<v;i++){
+        cout<<"\t";
+        for(int i=0;i<this->v;i++){
+            cout<<this->pair[i]<<"\t";
+        }
+        cout<<"\n\n";
+        for(int i=0;i<this->v;i++){
+            cout<<this->pair[i]<<"\t";
             for(int j=0;j<this->v;j++){
                 cout<<graph[i][j]<<"\t";
             }
@@ -43,9 +49,9 @@ public:
     }
     void InsertVertex(T v){
         T* tempPair=new T[++this->v];
-        T** tempGraph=new T*[this->v];
+        int** tempGraph=new int*[this->v];
         for(int i=0;i<this->v;i++){
-            tempGraph[i]=new T[this->v]{};
+            tempGraph[i]=new int[this->v]{};
         }
         int idx=0;
         for(;pair[idx]<v&&idx<this->v-1;idx++){
@@ -74,24 +80,23 @@ public:
             delete[]this->graph;
         this->graph=tempGraph;
     }
-    void InsertEdge(T u,T v,int l){
-        graph[GetIdx(u)][GetIdx(v)]=l;
+    void InsertEdge(T v,T u,int l){
         graph[GetIdx(v)][GetIdx(u)]=l;
+        graph[GetIdx(u)][GetIdx(v)]=l;
         this->e++;
     }
     void DeleteVertes(T v){
-        int idx=GetIdx(v);
-        for(int i=idx;i<this->v-1;i++){
+        for(int i=GetIdx(v);i<this->v-1;i++){
             pair[i]=pair[i+1];
-            for(int j=idx;j<this->v-1;j++){
+            for(int j=GetIdx(v);j<this->v-1;j++){
                 graph[i][j]=graph[i+1][j+1];
             }
         }
         this->v--;
     }
-    void DeleteEdge(int u,int v){
-        graph[GetIdx(u)][GetIdx(v)]=0;
+    void DeleteEdge(T v,T u){
         graph[GetIdx(v)][GetIdx(u)]=0;
+        graph[GetIdx(u)][GetIdx(v)]=0;
         this->e--;
     }
     //判断path中是否包含环
@@ -108,12 +113,11 @@ public:
     bool CyclicDFS(int v,int parent,bool* visited,int** path){
         visited[v]=true;
         for(int i=0;i<this->v;i++){
-            if(path[i][v]>0){
+            if(path[v][i]>0){
                 if(!visited[i]){
                     if(CyclicDFS(i,v,visited,path))
                         return true;
                 }
-                    
                 else if(i!=parent)
                     return true;
             }
@@ -206,19 +210,19 @@ public:
 };
 
 int main(){
-    Graph<int> g;
+    Graph<char> g;
     for(int i=0;i<7;i++){
-        g.InsertVertex(i);
+        g.InsertVertex(char('a'+i));
     }
-    g.InsertEdge(0,1,28);
-    g.InsertEdge(0,5,10);
-    g.InsertEdge(1,2,16);
-    g.InsertEdge(1,6,14);
-    g.InsertEdge(2,3,12);
-    g.InsertEdge(3,4,22);
-    g.InsertEdge(3,6,18);
-    g.InsertEdge(4,6,24);
-    g.InsertEdge(4,5,25);
+    g.InsertEdge('a','b',28);
+    g.InsertEdge('a','f',10);
+    g.InsertEdge('b','c',16);
+    g.InsertEdge('b','g',14);
+    g.InsertEdge('c','d',12);
+    g.InsertEdge('d','e',22);
+    g.InsertEdge('d','g',18);
+    g.InsertEdge('e','g',24);
+    g.InsertEdge('e','f',25);
     g.Print(g.graph,g.v);
     int** krusla=g.Kruskal();
     int** prim=g.Prim();
