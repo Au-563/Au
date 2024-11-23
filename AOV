@@ -173,6 +173,7 @@ public:
                 temp=temp->link;
             }
         }
+        cout<<endl;
     }
 };
 
