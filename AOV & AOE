@@ -9,10 +9,11 @@ public:
         int count;  //头顶点用于记录指向该顶点的顶点数
         T data;     //其余顶点用于记录顶点信息
     };
+    int len;
     Node* link;
 public:
-    Node():link(NULL){}
-    Node(T data):data(data),link(NULL){}
+    Node():len(0),link(NULL){}
+    Node(T data,int l):data(data),len(l),link(NULL){}
 };
 
 template<class T>
@@ -45,19 +46,19 @@ public:
     void Print(){
         cout<<"pair"<<endl;
         for(int i=0;i<this->v;i++){
-            cout<<this->pair[i]<<"\t";
+            cout<<this->pair[i];
         }
         cout<<"\n\ngraph"<<endl;
         for(int i=0;i<this->v;i++){
             cout<<"count:"<<this->graph[i]->count<<"\t";
             cout<<this->pair[i];
             if(this->graph[i]->link!=NULL)
-                cout<<" -> ";
+                cout<<"\t("<<this->graph[i]->link->len<<")-> ";
             Node<T>*temp=this->graph[i]->link;
             while(temp!=NULL){
-                cout<<temp->data;
+                cout<<temp->data<<"\t";
                 if(temp->link!=NULL)
-                    cout<<" -> ";
+                    cout<<"\t("<<temp->link->len<<")-> ";
                 temp=temp->link;
             }
             cout<<"\n"<<endl;
@@ -74,15 +75,18 @@ public:
         for(;idx<this->v-1&&pair[idx]<v;idx++){
             tempPair[idx]=this->pair[idx];
             tempGraph[idx]->count=this->graph[idx]->count;
+            tempGraph[idx]->len=this->graph[idx]->len;
             tempGraph[idx]->link=this->graph[idx]->link;
             this->graph[idx]->link=NULL;
         }
         tempPair[idx]=v;
         tempGraph[idx]->count=0;
+        tempGraph[idx]->len=0;
         tempGraph[idx++]->link=NULL;
         while(idx<this->v){
             tempPair[idx]=this->pair[idx-1];
             tempGraph[idx]->count=this->graph[idx-1]->count;
+            tempGraph[idx]->len=this->graph[idx-1]->len;
             tempGraph[idx]->link=this->graph[idx-1]->link;
             this->graph[idx++]->link=NULL;
         }
@@ -93,12 +97,12 @@ public:
             delete[]this->graph;
         this->graph=tempGraph;
     }
-    void InsertEdge(T v,T u){
+    void InsertEdge(T v,T u,int l){
         Node<T>* temp=this->graph[GetIdx(v)];
         while(temp->link!=NULL){
             temp=temp->link;
         }
-        Node<T>* tempNode=new Node<T>(u);
+        Node<T>* tempNode=new Node<T>(u,l);
         temp->link=tempNode;
         this->graph[GetIdx(u)]->count++;
         this->e++;
@@ -146,7 +150,8 @@ public:
         this->graph[GetIdx(u)]->count--;
         this->e--;
     }
-    void TopologicalOder(){
+    int* EarliestOccurrenceTime(){
+        int* time=new int[this->v]{};
         int* count=new int[this->v];
         for(int i=0;i<this->v;i++){
             count[i]=this->graph[i]->count;
@@ -161,10 +166,14 @@ public:
         for(int i=0;i<this->v;i++){
             if(top==-1)
                 throw"Network has a cycle";
-            cout<<this->pair[top]<<" ";
+            int past=time[GetIdx(this->pair[top])];
             Node<T>* temp=this->graph[top]->link;
             top=count[top];
             while(temp!=NULL){
+                if(time[GetIdx(temp->data)]==0)
+                    time[GetIdx(temp->data)]=past+temp->len;
+                else if(time[GetIdx(temp->data)]>0)
+                    time[GetIdx(temp->data)]=past+temp->len>time[GetIdx(temp->data)]?past+temp->len:time[GetIdx(temp->data)];
                 count[GetIdx(temp->data)]--;
                 if(count[GetIdx(temp->data)]==0){
                     count[GetIdx(temp->data)]=top;
@@ -173,25 +182,68 @@ public:
                 temp=temp->link;
             }
         }
-        cout<<endl;
+        return time;
+    }
+    int* LatestOccurrenceTime(){
+        int* earliestOccurrenceTime=this->EarliestOccurrenceTime();
+        int* time=new int[this->v]{};
+        time[this->v-1]=earliestOccurrenceTime[this->v-1];
+        int top=this->v-1;
+        while(top>=0){
+            for(int i=this->v-1;i>=0;i--){
+                if(i==top)
+                    continue;
+                Node<T>* temp=this->graph[i]->link;
+                while(temp!=NULL){
+                    if(temp->data==this->pair[top])
+                        break;
+                    temp=temp->link;
+                }
+                if(temp){
+                    if(time[i]==0)
+                        time[i]=time[top]-temp->len;
+                    else
+                        time[i]=time[top]-temp->len<time[i]?time[top]-temp->len:time[i];
+                }
+            }
+            top--;
+        }
+        return time;
     }
 };
 
 int main(){
     Graph<char> g;
-    for(int i=0;i<=5;i++){
+    for(int i=0;i<=8;i++){
         g.InsertVertex('a'+i);
     }
-    g.InsertEdge('a','b');
-    g.InsertEdge('a','c');
-    g.InsertEdge('a','d');
-    g.InsertEdge('b','e');
-    g.InsertEdge('c','e');
-    g.InsertEdge('c','f');
-    g.InsertEdge('d','e');
-    g.InsertEdge('d','f');
+    g.InsertEdge('a','b',6);
+    g.InsertEdge('a','c',4);
+    g.InsertEdge('a','d',5);
+    g.InsertEdge('b','e',1);
+    g.InsertEdge('c','e',1);
+    g.InsertEdge('d','f',2);
+    g.InsertEdge('e','g',9);
+    g.InsertEdge('e','h',7);
+    g.InsertEdge('f','h',4);
+    g.InsertEdge('g','i',2);
+    g.InsertEdge('h','i',4);
     g.Print();
-    cout<<"AOV-TopologicalOder："<<endl;
-    g.TopologicalOder();
+    cout<<"vertex：\t\t\t";
+    for(int i=0;i<g.v;i++){
+        cout<<g.pair[i]<<"\t";
+    }
+    cout<<"\n\n";
+    int* Etime=g.EarliestOccurrenceTime();
+    cout<<"EarliestOccurrenceTime：\t";
+    for(int i=0;i<g.v;i++){
+        cout<<Etime[i]<<"\t";
+    }
+    cout<<"\n\n";
+    int* Ltime=g.LatestOccurrenceTime();
+    cout<<"latestOccurrenceTime：\t\t";
+        for(int i=0;i<g.v;i++){
+        cout<<Ltime[i]<<"\t";
+    }
     return 0;
 }
