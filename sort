@@ -115,7 +115,7 @@ void merge(int arr[], int L, int M, int R)
 	{
 		temp[i++] = arr[p2++];
 	}
-    while(i-->0)
+    	while(i-->0)
 	{
 		arr[L + i] = temp[i];
 	}
