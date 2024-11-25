@@ -1,0 +1,193 @@
+#include<iostream>
+#include<time.h>
+using namespace std;
+template<class T>
+class Node{
+public:
+    union {
+        int count;  //头顶点用于记录指向该顶点的顶点数
+        T data;     //其余顶点用于记录顶点信息
+    };
+    Node* link;
+public:
+    Node():link(NULL){}
+    Node(T data):data(data),link(NULL){}
+};
+template<class T>
+class Graph{            //有向图     
+public:
+    int v;              //顶点数
+    int e;              //边数
+    T* pair;            //键对
+    Node<T>** graph;    //顶点
+public:
+    Graph():v(0),e(0){
+        this->pair=new T[1];
+        this->graph=new Node<T>*[1];
+        this->graph[0]=new Node<T>;
+    }
+    Graph(int v):v(v),e(0){
+        this->pair=new T[this->v];
+        this->graph=new Node<T>*[this->v];
+        for(int i=0;i<this->v;i++){
+            this->graph[i]=new Node<T>;
+        }
+    }
+    int GetIdx(T t){
+        for(int i=0;i<this->v;i++){
+            if(pair[i]==t)
+                return i;
+        }
+        return -1;
+    }
+    void Print(){
+        cout<<"pair"<<endl;
+        for(int i=0;i<this->v;i++){
+            cout<<this->pair[i]<<"\t";
+        }
+        cout<<"\n\ngraph"<<endl;
+        for(int i=0;i<this->v;i++){
+            cout<<"count:"<<this->graph[i]->count<<"\t";
+            cout<<this->pair[i];
+            if(this->graph[i]->link!=NULL)
+                cout<<" -> ";
+            Node<T>*temp=this->graph[i]->link;
+            while(temp!=NULL){
+                cout<<temp->data;
+                if(temp->link!=NULL)
+                    cout<<" -> ";
+                temp=temp->link;
+            }
+            cout<<"\n"<<endl;
+        }
+        cout<<endl;
+    }
+    void InsertVertex(T v){
+        T* tempPair=new T[++this->v];
+        Node<T>** tempGraph=new Node<T>*[this->v];
+        for(int i=0;i<this->v;i++){
+            tempGraph[i]=new Node<T>;
+        }
+        int idx=0;
+        for(;idx<this->v-1&&pair[idx]<v;idx++){
+            tempPair[idx]=this->pair[idx];
+            tempGraph[idx]->count=this->graph[idx]->count;
+            tempGraph[idx]->link=this->graph[idx]->link;
+            this->graph[idx]->link=NULL;
+        }
+        tempPair[idx]=v;
+        tempGraph[idx]->count=0;
+        tempGraph[idx++]->link=NULL;
+        while(idx<this->v){
+            tempPair[idx]=this->pair[idx-1];
+            tempGraph[idx]->count=this->graph[idx-1]->count;
+            tempGraph[idx]->link=this->graph[idx-1]->link;
+            this->graph[idx++]->link=NULL;
+        }
+        if(this->pair)
+            delete[]this->pair;
+        this->pair=tempPair;
+        if(this->graph)
+            delete[]this->graph;
+        this->graph=tempGraph;
+    }
+    void InsertEdge(T v,T u){
+        Node<T>* temp=this->graph[GetIdx(v)];
+        while(temp->link!=NULL){
+            temp=temp->link;
+        }
+        Node<T>* tempNode=new Node<T>(u);
+        temp->link=tempNode;
+        this->graph[GetIdx(u)]->count++;
+        this->e++;
+    }
+    void DeleteVertes(T v){
+        Node<T>* temp=this->graph[GetIdx(v)];
+        for(int i=GetIdx(v);i<this->v-1;i++){
+            pair[i]=pair[i+1];
+            graph[i]=graph[i+1];
+        }
+        delete[] temp;
+        this->v--;
+        for(int i=0;i<this->v;i++){
+            temp=this->graph[i];
+            while(temp!=NULL&&temp->link!=NULL){
+                if(temp->link->data==v){
+                    Node<T>* tempNode=temp->link;
+                    if(temp->link->link)
+                        temp->link=temp->link->link;
+                    else    
+                        temp->link=NULL;
+                    delete[] tempNode;
+                    this->graph[i]->count--;
+                }
+                temp=temp->link;
+            }
+        }
+    }
+    void DeleteEdge(T v,T u){
+        Node<T>* temp=graph[GetIdx(v)];
+        while(temp->link->data!=u&&temp!=NULL){
+            temp=temp->link;
+        }
+        if(temp){
+            Node<T>* tempNode=temp->link;
+            if(temp->link->link)
+                temp->link=temp->link->link;
+            else    
+                temp->link=NULL;
+            if(tempNode){
+                delete[] tempNode;
+                tempNode=NULL;
+            }
+        }
+        this->graph[GetIdx(u)]->count--;
+        this->e--;
+    }
+    void TopologicalOder(){
+        int* count=new int[this->v];
+        for(int i=0;i<this->v;i++){
+            count[i]=this->graph[i]->count;
+        }
+        int top=-1;
+        for(int i=0;i<this->v;i++){
+            if(count[i]==0){
+                count[i]=top;
+                top=i;
+            }
+        }
+        for(int i=0;i<this->v;i++){
+            if(top==-1)
+                throw"Network has a cycle";
+            cout<<this->pair[top]<<" ";
+            Node<T>* temp=this->graph[top]->link;
+            top=count[top];
+            while(temp!=NULL){
+                count[GetIdx(temp->data)]--;
+                if(count[GetIdx(temp->data)]==0){
+                    count[GetIdx(temp->data)]=top;
+                    top=GetIdx(temp->data);
+                }
+                temp=temp->link;
+            }
+        }
+    }
+};
+int main(){
+    Graph<char> g;
+    for(int i=0;i<=5;i++){
+        g.InsertVertex('a'+i);
+    }
+    g.InsertEdge('a','b');
+    g.InsertEdge('a','c');
+    g.InsertEdge('a','d');
+    g.InsertEdge('b','e');
+    g.InsertEdge('c','e');
+    g.InsertEdge('c','f');
+    g.InsertEdge('d','e');
+    g.InsertEdge('d','f');
+    g.Print();
+    cout<<"AOV-TopologicalOder："<<endl;
+    g.TopologicalOder();
+    return 0;
+}
