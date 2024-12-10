@@ -1,0 +1,256 @@
+#include<iostream>
+#include<stack>
+#include<queue>
+using namespace std;
+
+class Node{
+public:
+    int data;           //节点数据
+    int depth;          //深度
+    int deta;           //左右孩子高度差
+    Node* leftChild;    //左孩子
+    Node* rightChild;   //右孩子
+public:
+    Node():leftChild(NULL),rightChild(NULL){}
+    Node(int data):data(data),depth(0),deta(0),leftChild(NULL),rightChild(NULL){}
+};
+class AVL{
+public:
+    Node* root;
+public:
+    AVL():root(NULL){}
+    AVL(int data){
+        this->root=new Node(data);
+    }
+    void Print(){
+        queue<Node*> q;
+        q.push(this->root);
+        while(!q.empty()){
+            if(q.front()->leftChild)
+                q.push(q.front()->leftChild);
+            if(q.front()->rightChild)
+                q.push(q.front()->rightChild);
+            cout<<"data："<<q.front()->data<<"  depth："<<q.front()->depth<<"   deta："<<q.front()->deta<<endl;
+            q.pop();
+        }
+        cout<<endl;
+    }
+    void UpdateDepth(Node* node){
+        if(node->leftChild&&node->rightChild)
+            node->depth=max(node->leftChild->depth,node->rightChild->depth)+1;
+        else if(node->leftChild&&!node->rightChild)
+            node->depth=node->leftChild->depth+1;
+        else if(!node->leftChild&&node->rightChild)
+            node->depth=node->rightChild->depth+1;
+        else
+            node->depth=0;
+    }
+    void UpdateDeta(Node* node){
+        if(node->leftChild&&node->rightChild)
+            node->deta=node->leftChild->depth-node->rightChild->depth;
+        else if(node->leftChild&&!node->rightChild)
+            node->deta=node->leftChild->depth+1;
+        else if(!node->leftChild&&node->rightChild)
+            node->deta=-node->rightChild->depth-1;
+        else
+            node->deta=0;
+    }
+    void UpdateNode(Node* node){
+        if(node->deta==2){
+            if(node->leftChild->deta==1){
+                Node* temp=node->leftChild;
+                swap(temp->data,node->data);
+                node->leftChild=temp->leftChild;
+                temp->leftChild=temp->rightChild;
+                temp->rightChild=node->rightChild;
+                node->rightChild=temp;
+                UpdateDepth(node->leftChild);
+                UpdateDeta(node->leftChild);
+                UpdateDepth(temp);
+                UpdateDeta(temp);
+            }
+            else{
+                Node* temp=node->leftChild->rightChild;
+                swap(temp->data,node->data);
+                node->leftChild->rightChild=temp->leftChild;
+                temp->leftChild=temp->rightChild;
+                temp->rightChild=node->rightChild;
+                node->rightChild=temp;
+                UpdateDepth(node->leftChild);
+                UpdateDeta(node->leftChild);
+                UpdateDepth(temp);
+                UpdateDeta(temp);
+            }
+        }
+        else if(node->deta==-2){
+            if(node->rightChild->deta==-1){
+                Node* temp=node->rightChild;
+                swap(temp->data,node->data);
+                node->rightChild=temp->rightChild;
+                temp->rightChild=temp->leftChild;
+                temp->leftChild=node->leftChild;
+                node->leftChild=temp;
+                UpdateDepth(node->rightChild);
+                UpdateDeta(node->rightChild);
+                UpdateDepth(temp);
+                UpdateDeta(temp);
+            }
+            else{
+                Node* temp=node->rightChild->leftChild;
+                swap(temp->data,node->data);
+                node->rightChild->leftChild=temp->rightChild;
+                temp->rightChild=temp->leftChild;
+                temp->leftChild=node->leftChild;
+                node->leftChild=temp;
+                UpdateDepth(node->rightChild);
+                UpdateDeta(node->rightChild);
+                UpdateDepth(temp);
+                UpdateDeta(temp);
+            }
+        }
+        UpdateDepth(node);
+        UpdateDeta(node);
+    }
+    void Insert(int data){
+        Node* temp=this->root;
+        stack<Node*> path;
+        path.push(this->root);
+        while(temp!=NULL){
+            if(data<temp->data){
+                if(temp->leftChild==NULL){
+                    temp->leftChild=new Node(data);
+                    int idx=0;
+                    while(!path.empty()){
+                        if(path.top()->depth==idx){
+                            path.top()->depth++;
+                            UpdateDeta(path.top());
+                            UpdateNode(path.top());
+                            idx++;
+                            path.pop();
+                        }
+                        else{
+                            UpdateDeta(path.top());
+                            break;
+                        }
+                    }
+                    break;
+                }
+                else{
+                    path.push(temp->leftChild);
+                    temp=temp->leftChild;
+                }
+            }
+            else if(data>temp->data){
+                if(temp->rightChild==NULL){
+                    temp->rightChild=new Node(data);
+                    int idx=0;
+                    while(!path.empty()){
+                        if(path.top()->depth==idx){
+                            path.top()->depth++;
+                            UpdateDeta(path.top());
+                            UpdateNode(path.top());
+                            idx++;
+                            path.pop();
+                        }
+                        else{
+                            UpdateDeta(path.top());
+                            break;
+                        }
+                    }
+                    break;
+                }
+                else{
+                    path.push(temp->rightChild);
+                    temp=temp->rightChild;
+                }
+            }
+        }
+    }
+    void Delete(int data){
+        Node* temp=this->root;
+        stack<Node*> path;
+        while(temp!=NULL){
+            if(data==temp->data){
+                //叶子节点
+                if(temp->depth==0){
+                    if(temp->data<path.top()->data)
+                        path.top()->leftChild=NULL;
+                    else
+                        path.top()->rightChild=NULL;
+                    delete temp;
+                    while(!path.empty()){
+                        UpdateDepth(path.top());
+                        UpdateDeta(path.top());
+                        UpdateNode(path.top());
+                        path.pop();
+                    }
+                }
+                //非叶子节点
+                else{
+                    Node* newNode;
+                    path.push(temp);
+                    //左子树最大值
+                    if(temp->leftChild&&temp->deta>=0){
+                        newNode=temp->leftChild;
+                        while(newNode!=NULL){
+                            path.push(newNode);
+                            newNode=newNode->rightChild;
+                        }
+                        temp->data=path.top()->data;
+                        path.pop();
+                        if(path.top()==temp)
+                            path.top()->leftChild=NULL;
+                        else
+                            path.top()->rightChild=NULL;
+                    }
+                    //挑选右子树最小值
+                    else{
+                        newNode=temp->rightChild;
+                        while(newNode!=NULL){
+                            path.push(newNode);
+                            newNode=newNode->leftChild;
+                        }
+                        temp->data=path.top()->data;
+                        path.pop();
+                        if(path.top()==temp)
+                            path.top()->rightChild=NULL;
+                        else
+                            path.top()->leftChild=NULL;
+                    }
+                    while(!path.empty())
+                    {
+                        UpdateDepth(path.top());
+                        UpdateDeta(path.top());
+                        UpdateNode(path.top());
+                        path.pop();
+                    }                    
+                }
+                break;
+            }
+            else if(data<temp->data){
+                path.push(temp);
+                temp=temp->leftChild;
+            }
+            else if(data>temp->data){
+                path.push(temp);
+                temp=temp->rightChild;
+            }
+        }
+    }
+};
+
+int main(){
+    AVL avl(3);
+    avl.Insert(2);
+    avl.Insert(1);
+    avl.Insert(4);
+    avl.Insert(5);
+    avl.Insert(6);
+    avl.Insert(7);
+    avl.Insert(9);
+    avl.Insert(8);
+    avl.Print();
+    avl.Delete(4);
+    avl.Print();
+    return 0;
+}
