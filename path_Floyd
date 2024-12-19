@@ -94,7 +94,7 @@ public:
         this->e--;
     }
     //最短路径，多源 (v->u)
-    int AllLengths(int v,int u){
+    int Floyd(int v,int u){
         int** dist=new int*[this->v];
         for(int i=0;i<this->v;i++){
             dist[i]=new int [this->v];
@@ -125,6 +125,6 @@ int main(){
     g.InsertEdge(1,0,6);
     g.InsertEdge(2,0,3);
     g.Print(g.graph,g.v);
-    cout<<"最短路径："<<g.AllLengths(0,2);
+    cout<<"最短路径："<<g.Floyd(0,2);
     return 0;
 }
